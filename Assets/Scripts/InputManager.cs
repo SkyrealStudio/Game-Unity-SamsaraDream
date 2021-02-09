@@ -17,7 +17,7 @@ namespace enumNameSpace
 
 namespace inputManager 
 {
-    public class ImputManager : MonoBehaviour
+    public class InputManager : MonoBehaviour
     {
         public enum EnumStatus
         {

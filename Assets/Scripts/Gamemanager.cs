@@ -16,9 +16,9 @@ public class GameManager : MonoBehaviour
     private Vector3 respawnPosition;
     public Vector3 RespawnPosition { set => respawnPosition = value; }
 
-    public ImputManager imputManager;
+    public InputManager imputManager;
     public Canvas g_canvas;
-    public CameraManager CameraManager;
+    public CameraManager cameraManager;
 
     public bool g_allowUI = true;
     public GameObject UIContainer;
@@ -71,12 +71,12 @@ public class GameManager : MonoBehaviour
         coin_InteractionManager.gameObject.SetActive(true);
         mainCharacter_Rigidbody2D = mainCharacter.GetComponent<Rigidbody2D>();
         UIContainer.SetActive(g_allowUI);
+        GameStart();
     }
 
     public void GameOver()
     {
         print("gameOver \\(0ω0)/");
-        CameraManager.locked = true;
         mainCharacter.SetActive(false);
         score = 0;
         coin_InteractionManager.Reset();
@@ -84,7 +84,6 @@ public class GameManager : MonoBehaviour
         mainCharacter_Rigidbody2D.velocity = new Vector2(0f, 0f);
         mainCharacter.transform.position = respawnPosition; // ???
         mainCharacter.SetActive(true);
-        CameraManager.locked = false;
     }
 
     public void CharacterDie()
@@ -96,7 +95,7 @@ public class GameManager : MonoBehaviour
     public void GameStart()
     {
         print("gameStart _(:3 )∠_");
-        CameraManager.locked = false;
+        cameraManager.StartFollowing(mainCharacter);
         mainCharacter.gameObject.transform.position = new Vector2(0, 0);
         score = 0f;
         g_jumpEnabledCount = g_jumpEnabledLimit;
