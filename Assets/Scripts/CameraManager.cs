@@ -39,7 +39,7 @@ public class CameraManager : MonoBehaviour
     /// <summary>
     /// Camera zoom size.
     /// </summary>
-    public float _size;
+    private float _size;
 
     /// <summary>
     /// Camera zoom size.
@@ -308,7 +308,7 @@ public class CameraManager : MonoBehaviour
     private void Start()
     {
         // Initialize.
-        if (_size == 0f) _size = 5f;    // Undefined
+        _size = gameObject.GetComponent<Camera>().orthographicSize;
         _speedScale = 1f;
         _state = CameraState.Locked;
         _zoomingSpeedScale = 1f;

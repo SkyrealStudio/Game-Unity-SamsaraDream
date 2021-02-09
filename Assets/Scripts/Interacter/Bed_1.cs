@@ -20,8 +20,9 @@ public class Bed_1 : MonoBehaviour
     private float[] originColorAlphaValues;
 
     private bool[] status = new bool[2] { false, false };
-    private int[] interact = new int[2]; // [0] = pre [1] = now
+    private int[] interaction = new int[2]; // [0] = pre [1] = now
                                          //[Tip][20210124]只需要2个...这样设置主要...是我不相信玩家可以从一个存档点到另外一个存档点会短于几秒钟的时间
+    
     
     void Start()
     {
@@ -30,7 +31,7 @@ public class Bed_1 : MonoBehaviour
         bed_1s = new GameObject[childrenCount];
         tipers = new GameObject[childrenCount];
 
-        interact[0] = interact[1] = -1;
+        interaction[0] = interaction[1] = -1;
         
         destroyingRemainings = new float[childrenCount];
         originColorAlphaValues = new float[childrenCount];
@@ -49,19 +50,19 @@ public class Bed_1 : MonoBehaviour
 
     public bool Interact(int i)
     {
-        if (i == interact[1])
+        if (i == interaction[1])
             return false; //已登记
         else
         {
-            interact[0] = interact[1];
-            interact[1] = i;
+            interaction[0] = interaction[1];
+            interaction[1] = i;
 
-            destroyingRemainings[interact[1]] = 0f;
-            if(interact[0] != -1)
-                destroyingRemainings[interact[0]] = 0f;
+            destroyingRemainings[interaction[1]] = 0f;
+            if(interaction[0] != -1)
+                destroyingRemainings[interaction[0]] = 0f;
             
-            if(interact[0]!=-1)
-                originColorAlphaValues[interact[0]] = tipers[interact[0]].GetComponent<SpriteRenderer>().color.a;
+            if(interaction[0]!=-1)
+                originColorAlphaValues[interaction[0]] = tipers[interaction[0]].GetComponent<SpriteRenderer>().color.a;
 
             
             gm.RespawnPosition = bed_1s[i].transform.position + new Vector3(0f,0.5f,0f);
@@ -85,24 +86,24 @@ public class Bed_1 : MonoBehaviour
     {
         for (int i = 0; i < childrenCount; i++)
         {
-            if (i == interact[1])
+            if (i == interaction[1])
             {
+                if (destroyingRemainings[i] > destroyRemainTime_Set)
+                {
+                    continue;
+                }
                 destroyingRemainings[i] += Time.deltaTime;
                 float step = (Time.deltaTime / destroyRemainTime_Set) * 1f;
-                if (destroyingRemainings[i] >= destroyRemainTime_Set)
-                {
-                    continue;
-                }
                 tipers[i].GetComponent<SpriteRenderer>().color += new Color(0f, 0f, 0f, step);//变得不透明
             }
-            else if (i == interact[0])
+            else if (i == interaction[0])
             {
-                destroyingRemainings[i] += Time.deltaTime;
-                float step = (Time.deltaTime / destroyRemainTime_Set) * originColorAlphaValues[i];
-                if (destroyingRemainings[i] >= destroyRemainTime_Set)
+                if (destroyingRemainings[i] > destroyRemainTime_Set)
                 {
                     continue;
                 }
+                destroyingRemainings[i] += Time.deltaTime;
+                float step = (Time.deltaTime / destroyRemainTime_Set) * originColorAlphaValues[i];
                 tipers[i].GetComponent<SpriteRenderer>().color -= new Color(0f, 0f, 0f, step);//变得透明
             }
             else
