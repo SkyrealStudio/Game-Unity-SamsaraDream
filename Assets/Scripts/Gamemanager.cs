@@ -8,17 +8,19 @@ using inputManager;
 
 public class GameManager : MonoBehaviour
 {
+    public InputManager imputManager;
+    public CameraManager cameraManager;
     //Interact modules Begins
     public Bed_1 bed_1_InteractionManager;
     public Coin coin_InteractionManager;
     //Interact modules End
+    public MsgBoxManager msgboxManager;
 
     private Vector3 respawnPosition;
+    
     public Vector3 RespawnPosition { set => respawnPosition = value; }
 
-    public InputManager imputManager;
     public Canvas g_canvas;
-    public CameraManager cameraManager;
 
     public bool g_allowUI = true;
     public GameObject UIContainer;
