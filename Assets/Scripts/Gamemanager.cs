@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour
 
     //lock == true ; unlock == false
 
+    private bool _pauseFlag = false;
 
     void Start()
     {
@@ -74,6 +75,34 @@ public class GameManager : MonoBehaviour
         mainCharacter_Rigidbody2D = mainCharacter.GetComponent<Rigidbody2D>();
         UIContainer.SetActive(g_allowUI);
         GameStart();
+    }
+
+    public void GamePause() //co-op with MsgBoxManager
+    {
+        if(!_pauseFlag)
+        {
+            _pauseFlag = true;
+            //code
+            print("Pause!");
+        }
+        else
+        {
+            //do nothing
+        }
+    }
+
+    public void GameResume() //co-op with MsgBoxManager
+    {
+        if (_pauseFlag)
+        {
+            _pauseFlag = false;
+            //code
+            print("Resume!");
+        }
+        else
+        {
+            //do nothing
+        }
     }
 
     public void GameOver()
