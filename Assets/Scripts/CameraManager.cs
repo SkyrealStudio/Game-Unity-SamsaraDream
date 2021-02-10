@@ -317,7 +317,7 @@ public class CameraManager : MonoBehaviour
     private void Update()
     {
         _zoom();
-        print(_state.ToString());
+//        print(_state.ToString());
         switch(_state)
         {
             case CameraState.Following:
