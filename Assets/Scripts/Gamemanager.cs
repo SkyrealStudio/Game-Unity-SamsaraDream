@@ -126,11 +126,12 @@ public class GameManager : MonoBehaviour
     public void GameStart()
     {
         print("gameStart _(:3 )∠_");
-        cameraManager.StartFollowing(mainCharacter);
         mainCharacter.gameObject.transform.position = new Vector2(0, 0);
         score = 0f;
         g_jumpEnabledCount = g_jumpEnabledLimit;
         mainCharacter.SetActive(true);
+        cameraManager.StartFollowing(mainCharacter);
+        cameraManager.StartFollowing();
     }
 
     public bool AddJump()

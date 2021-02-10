@@ -310,7 +310,6 @@ public class CameraManager : MonoBehaviour
         // Initialize.
         _size = gameObject.GetComponent<Camera>().orthographicSize;
         _speedScale = 1f;
-        _state = CameraState.Locked;
         _zoomingSpeedScale = 1f;
         transform.position = new Vector3(0f, 0f, -1f);
     }
@@ -318,8 +317,8 @@ public class CameraManager : MonoBehaviour
     private void Update()
     {
         _zoom();
-        //print(_state.ToString());
-        switch(State)
+        print(_state.ToString());
+        switch(_state)
         {
             case CameraState.Following:
                 _follow();

@@ -8,9 +8,15 @@ public class MsgBoxManager : MonoBehaviour
     public GameManager gm;
 
     public Text Textt;
+    private string _textout;
+
     public GameObject goBox;
     public GameObject curtain;
     public GameObject[] roles;
+    private int _rolesCount = 0;
+    private bool[] _arrIsProcessingGrayscaleRole;
+    private float[] _arrtimeGrayscaleRole;
+
 
     [Range(0, 1f)] public float boxAlpha_SetFloat;
     public float boxAlphaTime_SetFloat;
@@ -44,7 +50,8 @@ public class MsgBoxManager : MonoBehaviour
     private float _textAlpha_percentCurrent;
 
     private bool _stableFlag;
-    private bool _openedFlag;
+    private bool _TabOpenedFlag;
+
 
     private void Start()
     {
@@ -54,10 +61,20 @@ public class MsgBoxManager : MonoBehaviour
         foreach (GameObject i  in roles)
         {
             i.GetComponent<Image>().color = new Color(i.GetComponent<Image>().color.r, i.GetComponent<Image>().color.g, i.GetComponent<Image>().color.b, 0f);
+            _rolesCount++;
         }
         _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = 0f;
+        _arrIsProcessingGrayscaleRole = new bool[_rolesCount];
+        _arrtimeGrayscaleRole = new float[_rolesCount];
+
+        for (int i = 0; i < _rolesCount; i++)
+        {
+            _arrIsProcessingGrayscaleRole[i] = false;
+            //_arrtimeGrayscaleRole[i] = 0f;
+        }
+        
         _stableFlag = true;
-    }
+    }   
 
     public enum MsgBoxState {
         Initing,
@@ -73,10 +90,8 @@ public class MsgBoxManager : MonoBehaviour
             return _state;
         }
     }
-    
-    private string _Textout;
 
-    private bool _Switching(bool mode)
+    private bool _SwitchingTab(bool mode)
     {
         if (_stableFlag == false)
         {
@@ -90,7 +105,7 @@ public class MsgBoxManager : MonoBehaviour
                 if (!mode)
                 {
                     gm.GameResume();
-                    _openedFlag = false;
+                    _TabOpenedFlag = false;
                 }
                 _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = 0f;
                 return _stableFlag;
@@ -103,7 +118,7 @@ public class MsgBoxManager : MonoBehaviour
                 if (mode)
                 {
                     gm.GamePause();
-                    _openedFlag = true;
+                    _TabOpenedFlag = true;
                     //[Tip][20210210]I know, this will be done much times, see "GamePause()" itself.
                     //[Tip][20210210]然后..yc你就感觉心情差的时候改改吧(治疗血压低2333) -- by wyc
                 }
@@ -131,7 +146,7 @@ public class MsgBoxManager : MonoBehaviour
 
     private void _Hidding()
     {
-        if (_Switching(false))
+        if (_SwitchingTab(false))
         {
             //codes
         }
@@ -142,7 +157,7 @@ public class MsgBoxManager : MonoBehaviour
     }
     private void _Running()
     {
-        if(_Switching(true))
+        if(_SwitchingTab(true))
         {
             //codes
         }
@@ -152,18 +167,29 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
     
-    private void _show(string s)
+    private void _TypeSingle(char c)
     {
-        
+        //[Tip][20210210]我觉得这里可配上打字机等效果(如果必要)
+        _textout += c.ToString();
     }
 
     void Update()
     {
+        //_TypeSingle('t');
+
+        //----set Active?----
+        goBox.SetActive(_TabOpenedFlag);
+        curtain.SetActive(_TabOpenedFlag);
+        foreach (GameObject i in roles)
+            i.SetActive(_TabOpenedFlag);
+
+
+        //----set AlphaValue Dynamaicly----
         goBox.GetComponent<Image>().color = new Color(goBox.GetComponent<Image>().color.r, goBox.GetComponent<Image>().color.g, goBox.GetComponent<Image>().color.b, _boxAlpha_percentCurrent * boxAlpha_SetFloat);
         curtain.GetComponent<Image>().color = new Color(curtain.GetComponent<Image>().color.r, curtain.GetComponent<Image>().color.g, curtain.GetComponent<Image>().color.b, _curtainAlpha_percentCurrent * curtainAlpha_SetFloat);
         Textt.color = new Color(Textt.color.r, Textt.color.g, Textt.color.b, _textAlpha_percentCurrent * textAlpha_SetFloat);
 
-        Textt.text = _Textout;
+        Textt.text = _textout;
 
         foreach (GameObject i in roles)
         {
