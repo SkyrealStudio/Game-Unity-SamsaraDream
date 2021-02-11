@@ -1,10 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MsgBoxManager : MonoBehaviour
 {
+    public enum MsgBoxState
+    {
+        Initing,
+        Running,
+        Hidding
+    };
+
+    private enum _TypeForm
+    {
+        Plain,
+        WaitEnding,
+        Clear
+    }
+
+    private enum _RoleGrayScaleState
+    {
+        Normal,
+        ProcessingN2C,
+        ProcessingC2N,
+        Completed,
+    }
+
     public GameManager gm;
 
     public Text Textt;
@@ -12,11 +35,12 @@ public class MsgBoxManager : MonoBehaviour
 
     public GameObject goBox;
     public GameObject curtain;
+
     public GameObject[] roles;
     private int _rolesLength = 0;
-    private bool[] _arrIsProcessingGrayscaleRole;
-    private float[] _arrtimeGrayscaleRole;
-
+    public bool[] _arrNeedProcessRoleGrayscale;
+    private _RoleGrayScaleState[] _arrRoleGrayScaleState;
+    public float[] _arrtimerGrayscaleRole;
 
     [Range(0, 1f)] public float boxAlpha_SetFloat;
     public float boxAlphaTime_SetFloat;
@@ -42,21 +66,21 @@ public class MsgBoxManager : MonoBehaviour
     private float _printTimerCurrent;
 
     public string nowString;
-    public int _msgCount;
-    
+    public int _msgPointer;
+
     private float _boxAlpha_percentCurrent;
     private float _curtainAlpha_percentCurrent;
     private float _roleAlpha_percentCurrent;
-    private float[] _roleGrayscales_percentCurrent;
+    public float[] _roleGrayscales_percentCurrent;
     private float _textAlpha_percentCurrent;
 
     private bool _stableFlag;
     private bool _TabOpenedFlag;
 
-    
+
     private _TypeForm _nowtypeForm;
     private string[] _waitingStr = new string[4];
-    private int _waitState = 1; //[Tip][20210210]这写的什么垃圾名字
+    private int _waitShape = 1;
     private float _timerWaitStateCount = 0f;
     public float timeWaitStateCount_Set;
 
@@ -71,29 +95,48 @@ public class MsgBoxManager : MonoBehaviour
         goBox.GetComponent<Image>().color = new Color(goBox.GetComponent<Image>().color.r, goBox.GetComponent<Image>().color.g, goBox.GetComponent<Image>().color.b, 0f);
         curtain.GetComponent<Image>().color = new Color(curtain.GetComponent<Image>().color.r, curtain.GetComponent<Image>().color.g, curtain.GetComponent<Image>().color.b, 0f);
         Textt.color = new Color(Textt.color.r, Textt.color.g, Textt.color.b, 0f);
-        foreach (GameObject i  in roles)
+        foreach (GameObject i in roles)
         {
             i.GetComponent<Image>().color = new Color(i.GetComponent<Image>().color.r, i.GetComponent<Image>().color.g, i.GetComponent<Image>().color.b, 0f);
             _rolesLength++;
         }
         _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = 0f;
-        _arrIsProcessingGrayscaleRole = new bool[_rolesLength];
-        _arrtimeGrayscaleRole = new float[_rolesLength];
+        
+        
+        _arrtimerGrayscaleRole = new float[_rolesLength];
+        _arrNeedProcessRoleGrayscale = new bool[_rolesLength];
+        _arrRoleGrayScaleState = new _RoleGrayScaleState[_rolesLength];
+        _roleGrayscales_percentCurrent = new float[_rolesLength];
 
         for (int i = 0; i < _rolesLength; i++)
         {
-            _arrIsProcessingGrayscaleRole[i] = false;
+            _arrNeedProcessRoleGrayscale[i] = false;
+            _arrRoleGrayScaleState[i] = _RoleGrayScaleState.Normal;
+            _roleGrayscales_percentCurrent[i] = 1f;
             //_arrtimeGrayscaleRole[i] = 0f;
         }
-        
-        _stableFlag = true;
-    }   
 
-    public enum MsgBoxState {
-        Initing,
-        Running,
-        Hidding
-    };
+        _stableFlag = true;
+    }
+
+    private bool _calcModeRoleGrayScaleState(int m_pointer)
+    {
+        switch(_arrRoleGrayScaleState[m_pointer])
+        {
+            case _RoleGrayScaleState.Completed:
+            case _RoleGrayScaleState.ProcessingC2N:
+                return false;//back to normal
+            case _RoleGrayScaleState.Normal:
+            case _RoleGrayScaleState.ProcessingN2C:
+                return true;//to grayscale
+            default:
+                Debug.LogError("Error at _RoleGrayScaleState -- no such selection");
+#if UNITY_EDITOR
+                EditorApplication.isPaused = true;
+#endif
+                return false;
+        }
+    }
 
     private MsgBoxState _state;
     public MsgBoxState State
@@ -159,11 +202,11 @@ public class MsgBoxManager : MonoBehaviour
                 _timerCurtainAlpha += Time.deltaTime;
                 _timerRoleAlpha += Time.deltaTime;
 
-                _boxAlpha_percentCurrent        += (mode ? 1f : -1f) * (Time.deltaTime / boxAlphaTime_SetFloat);
-                _curtainAlpha_percentCurrent    += (mode ? 1f : -1f) * (Time.deltaTime / curtainTime_SetFloat);
-                _roleAlpha_percentCurrent       += (mode ? 1f : -1f) * (Time.deltaTime / roleAlphaTime_SetFloat);
-                _textAlpha_percentCurrent       += (mode ? 1f : -1f) * (Time.deltaTime / textAlphaTime_SetFloat);
-                
+                _boxAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / boxAlphaTime_SetFloat);
+                _curtainAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / curtainTime_SetFloat);
+                _roleAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / roleAlphaTime_SetFloat);
+                _textAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / textAlphaTime_SetFloat);
+
 
                 return _stableFlag;
 
@@ -176,47 +219,36 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
-    private void _Hidding()
+
+    private void _setRoleGrayscale(int m_rolePointer,bool mode)
     {
-        if (_SwitchingTab(false))
+        if (_arrNeedProcessRoleGrayscale[m_rolePointer] == false)
         {
-            //codes
+            return;
         }
-        else
+
+        if ((m_rolePointer >= _rolesLength || m_rolePointer < 0))
         {
-            //do nothing
+            Debug.LogWarning("out of range _rolesLength");
+            return;
+        }
+
+        _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleState.ProcessingN2C : _RoleGrayScaleState.ProcessingC2N;
+
+        _arrtimerGrayscaleRole[m_rolePointer] += Time.deltaTime;
+
+        _roleGrayscales_percentCurrent[m_rolePointer] -= (mode ? 1f : -1f) * (Time.deltaTime / roleGrayscaleTime_SetFloat);
+
+        if (mode ? (_roleGrayscales_percentCurrent[m_rolePointer] < 0f) : (_roleGrayscales_percentCurrent[m_rolePointer] > 1f)/*|| _arrtimerGrayscaleRole[m_rolePointer] > roleGrayscaleTime_SetFloat*/)
+        {
+            _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleState.Completed: _RoleGrayScaleState.Normal;
+            _arrNeedProcessRoleGrayscale[m_rolePointer] = false;
         }
     }
-    private void _Running()
-    {
-        if(_SwitchingTab(true))
-        {
-            //----Type&Analysis----
-            #region Type&Analysis
-            switch (_nowtypeForm)
-            {
-                case _TypeForm.Plain:
-                    _printTimerCurrent += Time.deltaTime;
-                    if (_printTimerCurrent >= (secondPerChar / 1f))
-                    {
-                        for (int i=0; i<= (int)_printTimerCurrent / (secondPerChar /1f) ;i++)
-                            _TypeSingle();
-                        _printTimerCurrent = 0f;
-                    }
-                    break;
-                default:
-                    _Action();
-                    break;
-            }
-            #endregion
-        }
-        else
-        {
-            //do nothing
-        }
-    }
-    #region Type&Analysis_Functions
-    
+
+
+#region Type&Analysis_Functions
+
     private void _Action()
     {
         switch (_nowtypeForm)
@@ -246,25 +278,25 @@ public class MsgBoxManager : MonoBehaviour
         //[Tip][20210210]我觉得这里可配上打字机音效(如果必要)
 
         //[Tip][20210210]请在_TypeForm.Plain下使用
-        if (_msgCount<nowString.Length)
+        if (_msgPointer < nowString.Length)
         {
-            if (nowString[_msgCount] == '^')
+            if (nowString[_msgPointer] == '^')
             {
                 _SetNowTypeForm(_TypeForm.WaitEnding);
                 _Type();
-                _msgCount++;
+                _msgPointer++;
             }
-            else if (nowString[_msgCount] == '~')
+            else if (nowString[_msgPointer] == '~')
             {
                 _SetNowTypeForm(_TypeForm.Clear);
                 _Type();
-                _msgCount++;
+                _msgPointer++;
             }
             else
             {
-                _textout += nowString[_msgCount];
+                _textout += nowString[_msgPointer];
                 _Type();
-                _msgCount++;
+                _msgPointer++;
             }
         }
         else
@@ -276,16 +308,10 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
-    private enum _TypeForm
-    {
-        Plain,
-        WaitEnding,
-        Clear
-    }
-
+    //this _Type means Putout stream
     private void _Type()
     {
-        switch(_nowtypeForm)
+        switch (_nowtypeForm)
         {
             case _TypeForm.Plain:
                 Textt.text = _textout;
@@ -295,18 +321,18 @@ public class MsgBoxManager : MonoBehaviour
                 if (_timerWaitStateCount >= timeWaitStateCount_Set)
                 {
                     _timerWaitStateCount = 0f;
-                    ++_waitState;
-                    if (_waitState > 3)
+                    ++_waitShape;
+                    if (_waitShape > 3)
                     {
-                        _waitState = 1;
+                        _waitShape = 1;
                     }
-                    Textt.text = _waitingStr[_waitState];
+                    Textt.text = _waitingStr[_waitShape];
                 }
                 break;
             case _TypeForm.Clear:
                 _textout = "";
                 _SetNowTypeForm(_TypeForm.Plain);
-                break ;
+                break;
             default:
                 break;
         }
@@ -332,17 +358,18 @@ public class MsgBoxManager : MonoBehaviour
         _nowtypeForm = t;
     }
 
-    #endregion
+#endregion
 
     private bool _IsTouched_Experimental()
     {
         return (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
     }
 
+    //---------------------------------------UPDATE---------------------------------------------
 
     void Update()
     {
-        #region playgroundArea
+#region playgroundArea
         if (Input.GetKeyDown(KeyCode.R) && _stableFlag != false)
         {
             _stableFlag = false;
@@ -353,7 +380,7 @@ public class MsgBoxManager : MonoBehaviour
             _stableFlag = false;
             _state = MsgBoxState.Hidding;
         }
-        #endregion
+#endregion
 
         switch (_state)
         {
@@ -368,4 +395,55 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
+    //-------------------------------------ENDOF---UPDATE---------------------------------------------
+
+    private void _Hidding()
+    {
+        if (_SwitchingTab(false))
+        {
+            //codes
+        }
+        else
+        {
+            //do nothing
+        }
+    }
+    private void _Running()
+    {
+        if (_SwitchingTab(true))
+        {
+            //----Type&Analysis----
+#region Type&Analysis
+            switch (_nowtypeForm)
+            {
+                case _TypeForm.Plain:
+                    _printTimerCurrent += Time.deltaTime;
+                    if (_printTimerCurrent >= (secondPerChar / 1f))
+                    {
+                        for (int i = 0; i <= (int)_printTimerCurrent / (secondPerChar / 1f); i++)
+                            _TypeSingle();
+                        _printTimerCurrent = 0f;
+                    }
+                    break;
+                default:
+                    _Action();
+                    break;
+            }
+#endregion
+            //----RoleGrayScaling----
+            for(int i=0;i<_rolesLength;i++)
+            {
+                roles[i].GetComponent<Image>().color
+                    = new Color((roleGrayscale_SetFloat) + (1-roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                roles[i].GetComponent<Image>().color.a);
+                _setRoleGrayscale(i,_calcModeRoleGrayScaleState(i));
+            }
+        }
+        else
+        {
+            //do nothing
+        }
+    }
 }
