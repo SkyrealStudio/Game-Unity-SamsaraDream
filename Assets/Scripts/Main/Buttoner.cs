@@ -24,8 +24,10 @@ public class Buttoner : MonoBehaviour
         }
 
         UnityAction<BaseEventData> callback = new UnityAction<BaseEventData>(action);
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = eventID;
+        EventTrigger.Entry entry = new EventTrigger.Entry
+        {
+            eventID = eventID
+        };
         entry.callback.AddListener(callback);
 
         trigger.triggers.Add(entry);

@@ -6,9 +6,10 @@ using UnityEngine.UI;
 
 public class MsgBoxManager : MonoBehaviour
 {
-    public enum MsgBoxState
+    private UnityEngine.Events.UnityEvent _innerEvent = new UnityEngine.Events.UnityEvent();
+
+    public enum MsgBoxStatus
     {
-        Initing,
         Running,
         Hidding
     };
@@ -20,7 +21,7 @@ public class MsgBoxManager : MonoBehaviour
         Clear
     }
 
-    private enum _RoleGrayScaleState
+    private enum _RoleGrayScaleStatus
     {
         Normal,
         ProcessingN2C,
@@ -39,7 +40,7 @@ public class MsgBoxManager : MonoBehaviour
     public GameObject[] roles;
     private int _rolesLength = 0;
     public bool[] _arrNeedProcessRoleGrayscale;
-    private _RoleGrayScaleState[] _arrRoleGrayScaleState;
+    private _RoleGrayScaleStatus[] _arrRoleGrayScaleState;
     public float[] _arrtimerGrayscaleRole;
 
     [Range(0, 1f)] public float boxAlpha_SetFloat;
@@ -87,8 +88,10 @@ public class MsgBoxManager : MonoBehaviour
 
     private void Start()
     {
-        if (nowString == "") nowString = Textt.text;
+        //if (nowString == "") nowString = Textt.text;
+        _msgPointer = 0;
         Textt.text = "";
+        nowString = "^";
 
         _nowtypeForm = _TypeForm.Plain;
 
@@ -105,29 +108,111 @@ public class MsgBoxManager : MonoBehaviour
         
         _arrtimerGrayscaleRole = new float[_rolesLength];
         _arrNeedProcessRoleGrayscale = new bool[_rolesLength];
-        _arrRoleGrayScaleState = new _RoleGrayScaleState[_rolesLength];
+        _arrRoleGrayScaleState = new _RoleGrayScaleStatus[_rolesLength];
         _roleGrayscales_percentCurrent = new float[_rolesLength];
 
         for (int i = 0; i < _rolesLength; i++)
         {
             _arrNeedProcessRoleGrayscale[i] = false;
-            _arrRoleGrayScaleState[i] = _RoleGrayScaleState.Normal;
+            _arrRoleGrayScaleState[i] = _RoleGrayScaleStatus.Normal;
             _roleGrayscales_percentCurrent[i] = 1f;
             //_arrtimeGrayscaleRole[i] = 0f;
         }
-
         _stableFlag = true;
+        //----AddListener at _innerEvent----
+
+
+        //----End of AddListener at _innerEvent----
     }
+    void Update()
+    {
+        #region playgroundArea
+        if (Input.GetKeyDown(KeyCode.R) && _stableFlag != false)
+        {
+            _stableFlag = false;
+            _status = MsgBoxStatus.Running;
+        }
+        if (Input.GetKeyDown(KeyCode.H) && _stableFlag != false)
+        {
+            _stableFlag = false;
+            _status = MsgBoxStatus.Hidding;
+        }
+        #endregion
+
+        switch (_status)
+        {
+            case MsgBoxStatus.Running:
+                _Running();
+                break;
+            case MsgBoxStatus.Hidding:
+                _Hidding();
+                break;
+            default:
+                break;
+        }
+    }
+    private void _Running()
+    {
+        if (_SwitchingTab(true))
+        {
+            //----Type&Analysis----
+            #region Type&Analysis
+            switch (_nowtypeForm)
+            {
+                case _TypeForm.Plain:
+                    _printTimerCurrent += Time.deltaTime;
+                    if (_printTimerCurrent >= (secondPerChar / 1f))
+                    {
+                        for (int i = 0; i <= (int)_printTimerCurrent / (secondPerChar / 1f); i++)
+                            _TypeSingle();
+                        _printTimerCurrent = 0f;
+                    }
+                    break;
+                default:
+                    _Action();
+                    break;
+            }
+            #endregion
+            //----RoleGrayScaling----
+            for (int i = 0; i < _rolesLength; i++)
+            {
+                roles[i].GetComponent<Image>().color
+                    = new Color((roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
+                                roles[i].GetComponent<Image>().color.a);
+                _setRoleGrayscale(i, _calcModeRoleGrayScaleState(i));
+            }
+        }
+        else
+        {
+            //do nothing
+        }
+    }
+    private void _Hidding()
+    {
+        if (_SwitchingTab(false))
+        {
+            //codes
+        }
+        else
+        {
+            _textout = "";
+            nowString = "^";
+        }
+    }
+
+
 
     private bool _calcModeRoleGrayScaleState(int m_pointer)
     {
         switch(_arrRoleGrayScaleState[m_pointer])
         {
-            case _RoleGrayScaleState.Completed:
-            case _RoleGrayScaleState.ProcessingC2N:
+            case _RoleGrayScaleStatus.Completed:
+            case _RoleGrayScaleStatus.ProcessingC2N:
                 return false;//back to normal
-            case _RoleGrayScaleState.Normal:
-            case _RoleGrayScaleState.ProcessingN2C:
+            case _RoleGrayScaleStatus.Normal:
+            case _RoleGrayScaleStatus.ProcessingN2C:
                 return true;//to grayscale
             default:
                 Debug.LogError("Error at _RoleGrayScaleState -- no such selection");
@@ -138,18 +223,23 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
-    private MsgBoxState _state;
-    public MsgBoxState State
+    private MsgBoxStatus _status;
+    public MsgBoxStatus Status
     {
         get
         {
-            return _state;
+            return _status;
+        }
+        set
+        {
+            _status = value;
         }
     }
 
     private bool _SwitchingTab(bool mode)
     {
         //----set AlphaValue Dynamaicly----
+        
         goBox.GetComponent<Image>().color = new Color(goBox.GetComponent<Image>().color.r, goBox.GetComponent<Image>().color.g, goBox.GetComponent<Image>().color.b, _boxAlpha_percentCurrent * boxAlpha_SetFloat);
         curtain.GetComponent<Image>().color = new Color(curtain.GetComponent<Image>().color.r, curtain.GetComponent<Image>().color.g, curtain.GetComponent<Image>().color.b, _curtainAlpha_percentCurrent * curtainAlpha_SetFloat);
         Textt.color = new Color(Textt.color.r, Textt.color.g, Textt.color.b, _textAlpha_percentCurrent * textAlpha_SetFloat);
@@ -170,7 +260,8 @@ public class MsgBoxManager : MonoBehaviour
 
                 if (!mode/* && _TabOpenedFlag == true*/)
                 {
-                    gm.GameResume();
+                    if(gm!=null)
+                        gm.GameResume();
                     _TabOpenedFlag = false;
 
                     goBox.SetActive(false);
@@ -188,7 +279,8 @@ public class MsgBoxManager : MonoBehaviour
                 _stableFlag = false;
                 if (mode && _TabOpenedFlag == false)
                 {
-                    gm.GamePause();
+                    if(gm!=null)
+                        gm.GamePause();
                     _TabOpenedFlag = true;
 
                     //----set Active?----
@@ -233,7 +325,7 @@ public class MsgBoxManager : MonoBehaviour
             return;
         }
 
-        _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleState.ProcessingN2C : _RoleGrayScaleState.ProcessingC2N;
+        _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleStatus.ProcessingN2C : _RoleGrayScaleStatus.ProcessingC2N;
 
         _arrtimerGrayscaleRole[m_rolePointer] += Time.deltaTime;
 
@@ -241,20 +333,20 @@ public class MsgBoxManager : MonoBehaviour
 
         if (mode ? (_roleGrayscales_percentCurrent[m_rolePointer] < 0f) : (_roleGrayscales_percentCurrent[m_rolePointer] > 1f)/*|| _arrtimerGrayscaleRole[m_rolePointer] > roleGrayscaleTime_SetFloat*/)
         {
-            _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleState.Completed: _RoleGrayScaleState.Normal;
+            _arrRoleGrayScaleState[m_rolePointer] = (mode) ? _RoleGrayScaleStatus.Completed: _RoleGrayScaleStatus.Normal;
             _arrNeedProcessRoleGrayscale[m_rolePointer] = false;
         }
     }
 
 
-#region Type&Analysis_Functions
+    #region Type&Analysis_Functions
 
     private void _Action()
     {
         switch (_nowtypeForm)
         {
             case _TypeForm.WaitEnding:
-                if (Input.GetKeyDown(KeyCode.Return))
+                if (Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0) || _IsTouched_Experimental() )
                 {
                     _SetNowTypeForm(_TypeForm.Plain);
                     break;
@@ -301,14 +393,15 @@ public class MsgBoxManager : MonoBehaviour
         }
         else
         {
+            if (nowString == "^") return;
             //close This Tab
             _stableFlag = false;
-            _state = MsgBoxState.Hidding;
+            _status = MsgBoxStatus.Hidding;
             //[Tip][20210210]其实由此可知, 在大多数情况下, 你的文本末尾都会添加用以加载_TypeForm.WaitEnding的标记, 否则玩家来不及阅读文本
         }
     }
 
-    //this _Type means Putout stream
+    //this _Type means Put-out stream
     private void _Type()
     {
         switch (_nowtypeForm)
@@ -358,92 +451,33 @@ public class MsgBoxManager : MonoBehaviour
         _nowtypeForm = t;
     }
 
-#endregion
+    #endregion
 
+    #region playground
     private bool _IsTouched_Experimental()
     {
         return (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
     }
 
-    //---------------------------------------UPDATE---------------------------------------------
-
-    void Update()
+    public void RunWith(MsgBoxStatus state, string str)
     {
-#region playgroundArea
-        if (Input.GetKeyDown(KeyCode.R) && _stableFlag != false)
-        {
-            _stableFlag = false;
-            _state = MsgBoxState.Running;
-        }
-        if (Input.GetKeyDown(KeyCode.H) && _stableFlag != false)
-        {
-            _stableFlag = false;
-            _state = MsgBoxState.Hidding;
-        }
-#endregion
-
-        switch (_state)
-        {
-            case MsgBoxState.Running:
-                _Running();
-                break;
-            case MsgBoxState.Hidding:
-                _Hidding();
-                break;
-            default:
-                break;
-        }
+        _ResetNowString(str);
+        SetStatus(state);
     }
 
-    //-------------------------------------ENDOF---UPDATE---------------------------------------------
+    public void _ResetNowString(string str)
+    {
+        Textt.text = "";
+        nowString = str;
+        _msgPointer = 0;
+    }
+    
 
-    private void _Hidding()
+    public void SetStatus(MsgBoxStatus state)
     {
-        if (_SwitchingTab(false))
-        {
-            //codes
-        }
-        else
-        {
-            //do nothing
-        }
+        _stableFlag = false;
+        _status = state;
     }
-    private void _Running()
-    {
-        if (_SwitchingTab(true))
-        {
-            //----Type&Analysis----
-#region Type&Analysis
-            switch (_nowtypeForm)
-            {
-                case _TypeForm.Plain:
-                    _printTimerCurrent += Time.deltaTime;
-                    if (_printTimerCurrent >= (secondPerChar / 1f))
-                    {
-                        for (int i = 0; i <= (int)_printTimerCurrent / (secondPerChar / 1f); i++)
-                            _TypeSingle();
-                        _printTimerCurrent = 0f;
-                    }
-                    break;
-                default:
-                    _Action();
-                    break;
-            }
-#endregion
-            //----RoleGrayScaling----
-            for(int i=0;i<_rolesLength;i++)
-            {
-                roles[i].GetComponent<Image>().color
-                    = new Color((roleGrayscale_SetFloat) + (1-roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
-                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
-                                (roleGrayscale_SetFloat) + (1 - roleGrayscale_SetFloat) * _roleGrayscales_percentCurrent[i],
-                                roles[i].GetComponent<Image>().color.a);
-                _setRoleGrayscale(i,_calcModeRoleGrayScaleState(i));
-            }
-        }
-        else
-        {
-            //do nothing
-        }
-    }
+
+    #endregion
 }
