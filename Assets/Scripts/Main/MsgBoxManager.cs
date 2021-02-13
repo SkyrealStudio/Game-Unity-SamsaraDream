@@ -20,6 +20,7 @@ public class MsgBoxManager : MonoBehaviour
     {
         Plain,
         WaitEnding,
+        WaitEnding_noP,
         Clear
     }
 
@@ -95,7 +96,7 @@ public class MsgBoxManager : MonoBehaviour
         //if (nowString == "") nowString = Textt.text;
         _msgPointer = 0;
         Textt.text = "";
-        nowString = "^";
+        nowString = "";
 
         _nowtypeForm = _TypeForm.Plain;
 
@@ -205,7 +206,7 @@ public class MsgBoxManager : MonoBehaviour
         else
         {
             _textout = "";
-            nowString = "^";
+            nowString = "";
         }
     }
 
@@ -377,6 +378,7 @@ public class MsgBoxManager : MonoBehaviour
     {
         switch (_nowtypeForm)
         {
+            case _TypeForm.WaitEnding_noP:
             case _TypeForm.WaitEnding:
                 if (_boxTouched)
                 {
@@ -386,7 +388,6 @@ public class MsgBoxManager : MonoBehaviour
                 }
                 _Type();
                 break;
-
             //case _TypeForm.Clear:
             //    //this shouldn't happened
             //    Debug.LogWarning("MsgBox进入了一个 _TypeForm.Clear 的 _TypeForm");
@@ -411,6 +412,12 @@ public class MsgBoxManager : MonoBehaviour
                 _Type();
                 _msgPointer++;
             }
+            else if (nowString[_msgPointer] == '*')
+            {
+                _SetNowTypeForm(_TypeForm.WaitEnding_noP);
+                _Type();
+                _msgPointer++;
+            }
             else if (nowString[_msgPointer] == '~')
             {
                 _SetNowTypeForm(_TypeForm.Clear);
@@ -426,7 +433,7 @@ public class MsgBoxManager : MonoBehaviour
         }
         else
         {
-            if (nowString == "^") return;
+            if (nowString == "") return;
             //close This Tab
             _stableFlag = false;
             _status = MsgBoxStatus.Hidding;
@@ -455,6 +462,9 @@ public class MsgBoxManager : MonoBehaviour
                     Textt.text = _waitingStr[_waitShape];
                 }
                 break;
+            case _TypeForm.WaitEnding_noP:
+                _timerWaitStateCount += Time.deltaTime;
+                break;
             case _TypeForm.Clear:
                 _textout = "";
                 _SetNowTypeForm(_TypeForm.Plain);
@@ -473,7 +483,7 @@ public class MsgBoxManager : MonoBehaviour
             _waitingStr[2] = _textout + " . .";
             _waitingStr[3] = _textout + " . . .";
         }
-        else if (t == _TypeForm.Plain && _nowtypeForm == _TypeForm.WaitEnding)
+        else if (t == _TypeForm.Plain && (_nowtypeForm == _TypeForm.WaitEnding || _nowtypeForm == _TypeForm.WaitEnding))
         {
             if (_waitingStr[0] != null)
             {
@@ -496,6 +506,13 @@ public class MsgBoxManager : MonoBehaviour
     {
         _ResetNowString(str);
         SetStatus(state);
+    }
+
+    public void RunWith(MsgBoxStatus state, string str,float alphaTime)
+    {
+        _ResetNowString(str);
+        SetStatus(state);
+        _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = alphaTime;
     }
 
     public void _ResetNowString(string str)

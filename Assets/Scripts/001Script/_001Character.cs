@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class _001Character : MonoBehaviour
 {
+    public UnityEvent unityEvent;
+
     public _001Manager gm;
     // Start is called before the first frame update
     void Start()
@@ -28,5 +32,4 @@ public class _001Character : MonoBehaviour
             //collision.gameObject.SetActive(false);
         }
     }
-
 }

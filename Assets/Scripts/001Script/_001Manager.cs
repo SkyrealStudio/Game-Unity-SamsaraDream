@@ -9,9 +9,11 @@ using UnityEngine.Experimental.Rendering.Universal;
 
 public class _001Manager : MonoBehaviour
 {
+    public _001Character characterManager;
 
-    public _001BlackGroundText hdbzManager;
+    //public _001BlackGroundText hdbzManager;
     public MsgBoxManager mbmNormal;
+    public MsgBoxManager mbmHDBZ;
 
     public enum ScriptState
     {
@@ -22,7 +24,7 @@ public class _001Manager : MonoBehaviour
     public int performingPointer = 0;
     
     public Light2D l2d_white; 
-    public LightDimer ld;
+    //public LightDimer ld;
 
     private float _l2d_outerRadiusSet;
     private float _l2d_IntensitySet;
@@ -60,7 +62,7 @@ public class _001Manager : MonoBehaviour
         l2d_white.intensity = 0f;
         
 
-        performingPointer = -10;
+        performingPointer = 0;
         scriptState = ScriptState.OnDoing;
 
         cm.SetFollowingGameObject(camHold);
@@ -108,9 +110,6 @@ public class _001Manager : MonoBehaviour
         if(buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && !buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
         {
             _keeptMoving(false);
-            //----Light Dimer----
-
-            //----end of LightDimer----
         }
         else if (!buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
         {
@@ -130,171 +129,27 @@ public class _001Manager : MonoBehaviour
             case ScriptState.OnDoing:
                 switch(performingPointer)
                 {
-                    case -10:
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("…这是哪…" + System.Environment.NewLine + "好黑…", Color.white);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case -9:
+                    case 0:
                         mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "身边一片漆黑^~");// + "像是知道目的地一样，我不断地向路的尽头走去^~" + "…目标是路的尽头吗，我不知道^~" + "路的尽头是光明吗…我不知道^~" + "我停下了脚步^~");
                         performingPointer++;
                         break;
-                    case -8:
+                    case 1:
                         //等待mbmNormal加载完毕后
                         if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hidding)
                         {
                             performingPointer++;
-                            _setControlmode(true); // 允许玩家进行操作了
                         }
-                        break;
-                    case -7:
-                        //_keeptMoving(true);
-                        _l2d_timer += Time.deltaTime;
-                        if(_l2d_timer > l2d_TimeSet)
-                        {
-                            performingPointer++;
-                        }
-                        else
-                        {
-                            //print(((l2d_white.pointLightOuterRadius / _l2d_outerRadiusSet) * _l2d_IntensitySet));
-                            l2d_white.pointLightOuterRadius += ((Time.deltaTime / l2d_TimeSet) * _l2d_outerRadiusSet);
-                            l2d_white.intensity = ((l2d_white.pointLightOuterRadius / _l2d_outerRadiusSet) * _l2d_IntensitySet);
-                        }
-                        break;
-                    case -6:
-                        break;
-                    case -5:
-                        break;
-                    case -4:
-                        break;
-                    case 0:
-                        break;
-                    case 1:
                         break;
                     case 2:
+                        mbmHDBZ.RunWith(MsgBoxManager.MsgBoxStatus.Running, "身边一片漆黑*~");// + "像是知道目的地一样，我不断地向路的尽头走去^~" + "…目标是路的尽头吗，我不知道^~" + "路的尽头是光明吗…我不知道^~" + "我停下了脚步^~");
+                        performingPointer++;
                         break;
                     case 3:
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("你还是来了",Color.white);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case 4:
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("熟悉的，少女的声音，出现在路的尽头" + System.Environment.NewLine +"我向着那个声音追去，最后干脆跑了起来" + System.Environment.NewLine +"再快点，或许就能追上，在无尽漆黑之路中出现的希望之音" + System.Environment.NewLine +"只要顺着这个方向前进，或许就能找到，无尽黑暗中的救赎",Color.white);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case 5:
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("我在这里哦",Color.red);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case 6:
-                        //rending door
-                        //此时玩家不动
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("不是来见我的吗", Color.red);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-
-                        break;
-                    case 7:
-                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + "为什么脚在擅自的动，快停下！^~");
-                        performingPointer++;
-                        break;
-                    case 8:
                         //等待mbmNormal加载完毕后
-                        if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hidding)
-                            performingPointer++;  
-                        break;
-                    case 9:
-                        switch (hdbzManager.Status)
+                        if (mbmHDBZ.Status == MsgBoxManager.MsgBoxStatus.Hidding)
                         {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("这是你导致的后果", Color.red);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case 10:
-                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + "不要记起…不要靠近…^~");
-                        performingPointer++;
-                        break;
-                    case 11:
-                        //等待mbmNormal加载完毕后
-                        if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hidding)
                             performingPointer++;
-                        break;
-                    case 12:
-                        switch (hdbzManager.Status)
-                        {
-                            case -1:
-                                if (true)//可等待判定
-                                    hdbzManager.Act("不要！", Color.red);
-                                break;
-                            case 3:
-                                hdbzManager.SetAble();
-                                performingPointer++;//下一剧本...
-                                break;
-                            default:
-                                break;
                         }
-                        break;
-                    default:
                         break;
                 }
                 break;
