@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class MsgBoxManager : MonoBehaviour
 {
@@ -85,9 +87,11 @@ public class MsgBoxManager : MonoBehaviour
     private float _timerWaitStateCount = 0f;
     public float timeWaitStateCount_Set;
 
+    private bool _boxTouched;
 
     private void Start()
     {
+        AddTriggersListener(goBox, EventTriggerType.PointerDown, BoxTouched);
         //if (nowString == "") nowString = Textt.text;
         _msgPointer = 0;
         Textt.text = "";
@@ -124,6 +128,7 @@ public class MsgBoxManager : MonoBehaviour
 
         //----End of AddListener at _innerEvent----
     }
+
     void Update()
     {
         #region playgroundArea
@@ -151,6 +156,7 @@ public class MsgBoxManager : MonoBehaviour
                 break;
         }
     }
+
     private void _Running()
     {
         if (_SwitchingTab(true))
@@ -189,6 +195,7 @@ public class MsgBoxManager : MonoBehaviour
             //do nothing
         }
     }
+
     private void _Hidding()
     {
         if (_SwitchingTab(false))
@@ -202,7 +209,10 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
-
+    public void BoxTouched(BaseEventData b)
+    {
+        _boxTouched = true;
+    }
 
     private bool _calcModeRoleGrayScaleState(int m_pointer)
     {
@@ -337,31 +347,54 @@ public class MsgBoxManager : MonoBehaviour
             _arrNeedProcessRoleGrayscale[m_rolePointer] = false;
         }
     }
+    
+    private void AddTriggersListener(GameObject obj, EventTriggerType eventID, UnityAction<BaseEventData> action)
+    {
+        EventTrigger trigger = obj.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = obj.AddComponent<EventTrigger>();
+        }
+
+        if (trigger.triggers.Count == 0)
+        {
+            trigger.triggers = new List<EventTrigger.Entry>();
+        }
+
+        UnityAction<BaseEventData> callback = new UnityAction<BaseEventData>(action);
+        EventTrigger.Entry entry = new EventTrigger.Entry
+        {
+            eventID = eventID
+        };
+        entry.callback.AddListener(callback);
+
+        trigger.triggers.Add(entry);
+    }
 
 
     #region Type&Analysis_Functions
-
     private void _Action()
     {
         switch (_nowtypeForm)
         {
             case _TypeForm.WaitEnding:
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0) || _IsTouched_Experimental() )
+                if (_boxTouched)
                 {
                     _SetNowTypeForm(_TypeForm.Plain);
+                    _boxTouched = false;
                     break;
                 }
                 _Type();
                 break;
 
-            case _TypeForm.Clear:
-                //this shouldn't happened
-                Debug.LogWarning("MsgBox进入了一个 _TypeForm.Clear 的 _TypeForm");
-                break;
-            default:
-                //this shouldn't happened
-                Debug.LogWarning("MsgBox进入了一个 未知 的_TypeForm");
-                break;
+            //case _TypeForm.Clear:
+            //    //this shouldn't happened
+            //    Debug.LogWarning("MsgBox进入了一个 _TypeForm.Clear 的 _TypeForm");
+            //    break;
+            //default:
+            //    //this shouldn't happened
+            //    Debug.LogWarning("MsgBox进入了一个 未知 的_TypeForm");
+            //    break;
         }
     }
 

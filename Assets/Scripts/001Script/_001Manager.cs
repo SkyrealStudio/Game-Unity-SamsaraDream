@@ -1,10 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEditor;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Experimental.Rendering.Universal;
 
 public class _001Manager : MonoBehaviour
 {
+
     public _001BlackGroundText hdbzManager;
     public MsgBoxManager mbmNormal;
 
@@ -15,14 +20,22 @@ public class _001Manager : MonoBehaviour
     }
     public ScriptState scriptState;
     public int performingPointer = 0;
-
+    
+    public Light2D l2d_white; 
     public LightDimer ld;
+
+    private float _l2d_outerRadiusSet;
+    private float _l2d_IntensitySet;
+    public float l2d_TimeSet;
+    private float _l2d_timer;
 
     public CameraManager cm;
     public GameObject camHold;
     public GameObject mainCharacter;
     public Rigidbody2D mC_rig2D;
     public Collider2D mC_col2D;
+
+    public Buttoner[] buttoners;
 
     public GameObject groundGroup;
     public float groundFloatAdd;
@@ -38,26 +51,78 @@ public class _001Manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        performingPointer = 0;
+        _setControlmode(false);
+
+        _l2d_outerRadiusSet = l2d_white.pointLightOuterRadius; 
+        _l2d_IntensitySet = l2d_white.intensity;
+
+        l2d_white.pointLightOuterRadius = 0f;
+        l2d_white.intensity = 0f;
+        
+
+        performingPointer = -10;
         scriptState = ScriptState.OnDoing;
 
         cm.SetFollowingGameObject(camHold);
         cm.StartFollowing();
         positionOrigion = mainCharacter.transform.position;
+        _stopMoving();
+    }
+
+
+    private void _stopMoving()
+    {
+        mC_rig2D.velocity = new Vector3(0f, mC_rig2D.velocity.y);
+    }
+
+    private void _keeptMoving(bool mode)
+    {
+        if (mode)
+        {
+            mC_rig2D.velocity = new Vector3(speedX, mC_rig2D.velocity.y);
+            return;
+        }
+        mC_rig2D.velocity = new Vector3(-speedX, mC_rig2D.velocity.y);
+    }
+
+    private void _setControlmode(bool mode)
+    {
+        foreach(Buttoner buttoner in buttoners)
+        {
+            buttoner.gameObject.SetActive(mode);
+            buttoner.gameObject.GetComponent<Button>().interactable = mode;
+        }
     }
 
     // Update is called once per frame
+
+    public 
+    
     void Update()
     {
-        if (performingPointer < 6)
+        //----
+
+        //----
+
+        //----movement----
+        if(buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && !buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
         {
-            mC_rig2D.velocity = new Vector3(speedX, mC_rig2D.velocity.y);
+            _keeptMoving(false);
+            //----Light Dimer----
+
+            //----end of LightDimer----
+        }
+        else if (!buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
+        {
+            _keeptMoving(true);
         }
         else
         {
-            mC_rig2D.velocity = new Vector3(0f, mC_rig2D.velocity.y);
+            _stopMoving();
         }
-        switch(scriptState)
+        //----End of movement----
+
+        switch (scriptState)
         {
             case ScriptState.OnWaiting:
                 //让孩子们去做事
@@ -65,12 +130,12 @@ public class _001Manager : MonoBehaviour
             case ScriptState.OnDoing:
                 switch(performingPointer)
                 {
-                    case 0:
-                        switch(hdbzManager.Status)
+                    case -10:
+                        switch (hdbzManager.Status)
                         {
                             case -1:
-                                if(true)//可等待判定
-                                    hdbzManager.Act("…这是哪…" + System.Environment.NewLine + "好黑…",Color.white);
+                                if (true)//可等待判定
+                                    hdbzManager.Act("…这是哪…" + System.Environment.NewLine + "好黑…", Color.white);
                                 break;
                             case 3:
                                 hdbzManager.SetAble();
@@ -80,14 +145,43 @@ public class _001Manager : MonoBehaviour
                                 break;
                         }
                         break;
-                    case 1:
-                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "身边一片漆黑^~" + System.Environment.NewLine + "像是知道目的地一样，我不断地向路的尽头走去^~" + System.Environment.NewLine + "…目标是路的尽头吗，我不知道^~" + System.Environment.NewLine + "路的尽头是光明吗…我不知道^~" + System.Environment.NewLine + "我停下了脚步^~");
+                    case -9:
+                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "身边一片漆黑^~");// + "像是知道目的地一样，我不断地向路的尽头走去^~" + "…目标是路的尽头吗，我不知道^~" + "路的尽头是光明吗…我不知道^~" + "我停下了脚步^~");
                         performingPointer++;
                         break;
-                    case 2:
+                    case -8:
                         //等待mbmNormal加载完毕后
                         if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hidding)
+                        {
                             performingPointer++;
+                            _setControlmode(true); // 允许玩家进行操作了
+                        }
+                        break;
+                    case -7:
+                        //_keeptMoving(true);
+                        _l2d_timer += Time.deltaTime;
+                        if(_l2d_timer > l2d_TimeSet)
+                        {
+                            performingPointer++;
+                        }
+                        else
+                        {
+                            //print(((l2d_white.pointLightOuterRadius / _l2d_outerRadiusSet) * _l2d_IntensitySet));
+                            l2d_white.pointLightOuterRadius += ((Time.deltaTime / l2d_TimeSet) * _l2d_outerRadiusSet);
+                            l2d_white.intensity = ((l2d_white.pointLightOuterRadius / _l2d_outerRadiusSet) * _l2d_IntensitySet);
+                        }
+                        break;
+                    case -6:
+                        break;
+                    case -5:
+                        break;
+                    case -4:
+                        break;
+                    case 0:
+                        break;
+                    case 1:
+                        break;
+                    case 2:
                         break;
                     case 3:
                         switch (hdbzManager.Status)
@@ -153,7 +247,7 @@ public class _001Manager : MonoBehaviour
 
                         break;
                     case 7:
-                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + System.Environment.NewLine + "为什么脚在擅自的动，快停下！^~");
+                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + "为什么脚在擅自的动，快停下！^~");
                         performingPointer++;
                         break;
                     case 8:
@@ -177,7 +271,7 @@ public class _001Manager : MonoBehaviour
                         }
                         break;
                     case 10:
-                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + System.Environment.NewLine + "不要记起…不要靠近…^~");
+                        mbmNormal.RunWith(MsgBoxManager.MsgBoxStatus.Running, "不要….不要…^~" + "不要记起…不要靠近…^~");
                         performingPointer++;
                         break;
                     case 11:

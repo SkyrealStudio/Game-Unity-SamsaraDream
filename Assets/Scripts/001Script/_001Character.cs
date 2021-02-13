@@ -23,7 +23,8 @@ public class _001Character : MonoBehaviour
         if (collision.gameObject.tag == "TempTag")
         {
             //EditorApplication.isPaused = true;
-            GameObject t = Instantiate(gm.groundGroup, (gm.V3_groundGroupPre += new Vector3(gm.groundFloatAdd, 0f, 0f)), gm.groundGroup.transform.rotation);
+            Instantiate(gm.groundGroup, (gm.V3_groundGroupPre += new Vector3(gm.groundFloatAdd, 0f, 0f)), gm.groundGroup.transform.rotation);
+            //Instantiate(gm.groundGroup, (gm.V3_groundGroupPre -= new Vector3(gm.groundFloatAdd, 0f, 0f)), gm.groundGroup.transform.rotation);
             //collision.gameObject.SetActive(false);
         }
     }
