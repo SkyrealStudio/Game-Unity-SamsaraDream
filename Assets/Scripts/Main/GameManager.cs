@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
     public bool[] g_movementJurisdiction = new bool[4] { true, true, true, true};
     /*0=left , 1=right , 2=up , 3=down
      *true ==  
-     */                                                                    
+     */
     public bool g_grounded = false;
     
     public float drag_set = 0.7f;
