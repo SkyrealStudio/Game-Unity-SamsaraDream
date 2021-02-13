@@ -1,0 +1,12 @@
+*.meta
+Assembly-CSharp.csproj
+EmptyProject.sln
+Comments/
+ConstructLog/
+Library/
+Logs/
+obj/
+Packages/
+ProjectSettings/
+Temp/
+UserSettings/
