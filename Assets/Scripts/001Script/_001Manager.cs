@@ -11,6 +11,8 @@ public class _001Manager : MonoBehaviour
 {
     public _001Character characterManager;
 
+    public Buttoner buttonerInteract;
+
     //public _001BlackGroundText hdbzManager;
     public MsgBoxManager mbmNormal;
     public MsgBoxManager mbmHDBZ;
@@ -69,8 +71,17 @@ public class _001Manager : MonoBehaviour
         cm.StartFollowing();
         positionOrigion = mainCharacter.transform.position;
         _stopMoving();
+
+        characterManager.doorEvent.AddListener(_DoorEvent);
     }
 
+    private void _DoorEvent()
+    {
+        if(buttonerInteract.pressed)
+        {
+            
+        }
+    }
 
     private void _stopMoving()
     {
@@ -98,9 +109,7 @@ public class _001Manager : MonoBehaviour
 
     // Update is called once per frame
 
-    public 
-    
-    void Update()
+    public void Update()
     {
         //----
 
