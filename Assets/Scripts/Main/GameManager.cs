@@ -188,7 +188,7 @@ public class GameManager : MonoBehaviour
             Print_Text("Score:" + (int)score);
         }
         
-        /*/----movement----
+        //----movement----
         if (imputManager.status[(int)EnumStatus.Left] && (g_grounded || g_movementJurisdiction[0]) == true)
         {
             laddermode = false;
@@ -260,7 +260,7 @@ public class GameManager : MonoBehaviour
         {
             mainCharacter_Rigidbody2D.gravityScale = 1f;
         }
-        //----endof movement----*/
+        //----endof movement----
         
         //----interact----
         if(nowInteract_possibly == true)
