@@ -18,14 +18,24 @@ using UnityEngine;
 public class MainCharacter : MonoBehaviour
 {
     /// <summary>
+    /// Jump handler.
+    /// </summary>
+    private delegate void _jumpHandler();
+
+    /// <summary>
+    /// Jump event.
+    /// </summary>
+    private event _jumpHandler _jumpEvent;
+
+    /// <summary>
     /// Attached game manager.
     /// </summary>
     public GameManager GM;
 
     /// <summary>
-    /// Ladder collider queue.
+    /// State the ability to jump again.
     /// </summary>
-    private Stack<Collider2D> queLadderCollider2D = new Stack<Collider2D>();
+    private bool _secondJump;
 
     #region Unity Calls
     /*----- Unity Calls -----*/
@@ -33,11 +43,18 @@ public class MainCharacter : MonoBehaviour
 
     private void Start()
     {
-        
+        if (GM == null)
+            GM = GameObject.Find("Manager").GetComponent<GameManager>();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        _secondJump = collision.gameObject.tag == "Ground" || collision.gameObject.tag == "Ladder";
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        /*--- ORIGIN
         if ( collision.transform.gameObject.tag == "Ground" )
         {
             GM.g_grounded = true;
@@ -58,11 +75,12 @@ public class MainCharacter : MonoBehaviour
         {
             GM.g_movementJurisdiction[0] = false;// left denied
         }
-
+        */
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        /*--- ORIGIN
         if (collision.transform.gameObject.tag == "Interactive_Coin")
         {
             collision.gameObject.transform.GetComponentInParent<Coin>().DeleteSelf(int.Parse(collision.gameObject.name));
@@ -79,10 +97,12 @@ public class MainCharacter : MonoBehaviour
         {
             queLadderCollider2D.Push(collision);
         }
+        */
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        /*--- ORIGIN
         if (collision.transform.gameObject.tag == "Interactive_Bed")
         {
             GM.De_nowInteract_possibly();//[Tip][20210205]注意! 按照这里的整套逻辑, 只能同时Interact一个可InterAct的对象
@@ -101,10 +121,12 @@ public class MainCharacter : MonoBehaviour
         {
             GM.CharacterDie();
         }
+        */
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
+        /*--- ORIGIN
         if (collision.transform.gameObject.tag == "Ground")
         {
             GM.g_grounded = false;
@@ -119,11 +141,14 @@ public class MainCharacter : MonoBehaviour
         {
             GM.g_movementJurisdiction[0] = true; //left allowed
         }
+        */
     }
 
     private void Update()
     {
+        /*--- ORIGIN
         GM.isLaddering = (queLadderCollider2D.Count != 0);
+        */
     }
     #endregion
 }
