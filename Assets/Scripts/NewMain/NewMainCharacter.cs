@@ -18,10 +18,20 @@ public class NewMainCharacter : MonoBehaviour
         Right,
         Null
     }
+
+    /// <summary>
+    /// States of character pose( & ability to act).
+    /// </summary>
+    private enum CharacterState
+    {
+        InAir,
+        InAirJumppable,
+        OnGround,
+        OnLadder
+    }
     #endregion
     #region Components
     /*----- Components -----*/
-    /*----- Work Area -----*/
     /// <summary>
     /// The 2D rigidbody attached to this gameObject.
     /// </summary>
@@ -32,9 +42,15 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private PhysicsMaterial2D _naturalForces;
     #endregion
+    #region Link Managers
+    /*----- Link Managers -----*/
+    /// <summary>
+    /// Active input manager.
+    /// </summary>
+    public NewInputManager InputManager;
+    #endregion
     #region Basic Behavior
     /*----- Basic Behavior -----*/
-    /*----- Work Area -----*/
     /// <summary>
     /// Perform a jump from ground.
     /// </summary>
@@ -135,9 +151,7 @@ public class NewMainCharacter : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKey(KeyCode.A)) __walk(MoveDirection.Left);
-        if (Input.GetKey(KeyCode.D)) __walk(MoveDirection.Right);
-        if (Input.GetKeyDown(KeyCode.Space)) __jump(MoveDirection.Null);
+        
     }
     #endregion
 }
