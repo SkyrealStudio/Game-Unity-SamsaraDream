@@ -22,11 +22,7 @@ public class MainCharacter : MonoBehaviour
     /// </summary>
     public GameManager gm;
 
-    private Stack<Collider2D> queLadderCollider2D;
-
-    #region Unity Calls
-    /*----- Unity Calls -----*/
-    /*----- Work Area -----*/
+    private Stack<Collider2D> queLadderCollider2D = new Stack<Collider2D>();
 
     private void Start()
     {
@@ -122,6 +118,6 @@ public class MainCharacter : MonoBehaviour
 
     private void Update()
     {
+
     }
-    #endregion
 }
