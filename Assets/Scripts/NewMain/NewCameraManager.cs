@@ -2,9 +2,7 @@
 using System;
 
 /// <summary>
-/// 2021/2/6 by wtc:<br />
-/// Camera manager.<br />
-/// **Basics Already done!**
+/// Camera manager.
 /// </summary>
 public class NewCameraManager : MonoBehaviour
 {
@@ -32,7 +30,6 @@ public class NewCameraManager : MonoBehaviour
         }
     }
     #endregion
-
     #region Camera Zoom
     /*----- Camera Zoom -----*/
 
@@ -69,7 +66,6 @@ public class NewCameraManager : MonoBehaviour
         _size = _Zoom;
     }
     #endregion
-
     #region Camera Speed
     /*----- Camera Speed -----*/
 
@@ -168,7 +164,6 @@ public class NewCameraManager : MonoBehaviour
             Time.deltaTime * ZoomingSpeedScale * 7.5f;
     }
     #endregion
-
     #region Camera Follow
     /*----- Camera Follow -----*/
 
@@ -227,7 +222,6 @@ public class NewCameraManager : MonoBehaviour
         _move(FollowingGameObject.transform.position);
     }
     #endregion
-
     #region Camera Focus
     /*----- Camera Focus -----*/
 
@@ -280,7 +274,6 @@ public class NewCameraManager : MonoBehaviour
         _move(FocusPosition);
     }
     #endregion
-
     #region Camera Lock
     /*----- Camera Lock -----*/
 
@@ -301,13 +294,11 @@ public class NewCameraManager : MonoBehaviour
         transform.position = (Vector3)_Position - new Vector3(0f, 0f, 1f);
     }
     #endregion
-
     #region Unity Calls
     /*----- Unity Calls -----*/
-
-    private void Start()
+    private void Awake()
     {
-        // Initialize.
+        // Initialization.
         _size = gameObject.GetComponent<Camera>().orthographicSize;
         _speedScale = 1f;
         _zoomingSpeedScale = 1f;
@@ -317,7 +308,6 @@ public class NewCameraManager : MonoBehaviour
     private void Update()
     {
         _zoom();
-//        print(_state.ToString());
         switch(_state)
         {
             case CameraState.Following:
