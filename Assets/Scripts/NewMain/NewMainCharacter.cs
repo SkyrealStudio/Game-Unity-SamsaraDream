@@ -22,7 +22,15 @@ public class NewMainCharacter : MonoBehaviour
     #region Components
     /*----- Components -----*/
     /*----- Work Area -----*/
+    /// <summary>
+    /// The 2D rigidbody attached to this gameObject.
+    /// </summary>
     private Rigidbody2D _rigidbody;
+
+    /// <summary>
+    /// The 2D physics material attached to this gameObject.
+    /// </summary>
+    private PhysicsMaterial2D _naturalForces;
     #endregion
     #region Basic Behavior
     /*----- Basic Behavior -----*/
@@ -33,7 +41,7 @@ public class NewMainCharacter : MonoBehaviour
     private void __jump(MoveDirection _Direction)
     {
         __hop(_Direction);
-        _rigidbody.AddForce(new Vector2(0f, 5f));
+        __hop(_Direction);
     }
 
     /// <summary>
@@ -53,7 +61,7 @@ public class NewMainCharacter : MonoBehaviour
                 // No side acceleration.
                 break;
         }
-        _rigidbody.AddForce(new Vector2(0f, 5f), ForceMode2D.Impulse);
+        _rigidbody.AddForce(new Vector2(0f, 4f), ForceMode2D.Impulse);
     }
 
     /// <summary>
@@ -73,10 +81,10 @@ public class NewMainCharacter : MonoBehaviour
         switch (_Direction)
         {
             case MoveDirection.Left:
-                _rigidbody.AddForce(new Vector2(-2.5f, 0f));
+                _rigidbody.AddForce(new Vector2(-.5f, 0f));
                 break;
             case MoveDirection.Right:
-                _rigidbody.AddForce(new Vector2(2.5f, 0f));
+                _rigidbody.AddForce(new Vector2(.5f, 0f));
                 break;
             default:
                 // No side acceleration.
@@ -108,12 +116,28 @@ public class NewMainCharacter : MonoBehaviour
     /*----- Work Area -----*/
     private void Awake()
     {
-        // Initialization.
+        // Bind.
         _rigidbody = gameObject.GetComponent<Rigidbody2D>();
+        _naturalForces = gameObject.GetComponent<CapsuleCollider2D>().sharedMaterial;
+        
+        // Initialization.
+        _rigidbody.freezeRotation = true;
+        _rigidbody.angularDrag = 0f;
+        _rigidbody.drag = .1f;
+        _rigidbody.mass = 1f;
+        _naturalForces.bounciness = 0f;
+        _naturalForces.friction = 1f;
     }
+
     private void Start()
     {
-        __hop(MoveDirection.Right);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.A)) __walk(MoveDirection.Left);
+        if (Input.GetKey(KeyCode.D)) __walk(MoveDirection.Right);
+        if (Input.GetKeyDown(KeyCode.Space)) __jump(MoveDirection.Null);
     }
     #endregion
 }
