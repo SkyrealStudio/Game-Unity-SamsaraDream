@@ -61,7 +61,8 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void __walk(MoveDirection _Direction)
     {
-
+        __glide(_Direction);
+        __glide(_Direction);
     }
 
     /// <summary>
@@ -69,7 +70,18 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void __glide(MoveDirection _Direction)
     {
-
+        switch (_Direction)
+        {
+            case MoveDirection.Left:
+                _rigidbody.AddForce(new Vector2(-2.5f, 0f));
+                break;
+            case MoveDirection.Right:
+                _rigidbody.AddForce(new Vector2(2.5f, 0f));
+                break;
+            default:
+                // No side acceleration.
+                break;
+        }
     }
 
     /// <summary>
@@ -77,7 +89,18 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void __climb(MoveDirection _Direction)
     {
-
+        switch (_Direction)
+        {
+            case MoveDirection.Up:
+                _rigidbody.velocity = new Vector2(0f, 1f);
+                break;
+            case MoveDirection.Down:
+                _rigidbody.velocity = new Vector2(0f, -1f);
+                break;
+            default:
+                _rigidbody.velocity = Vector2.zero;
+                break;
+        }
     }
     #endregion
     #region Unity Calls
