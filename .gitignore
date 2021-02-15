@@ -1,4 +1,5 @@
 *.meta
+*.bin
 .vs/
 Assembly-CSharp.csproj
 EmptyProject.sln
