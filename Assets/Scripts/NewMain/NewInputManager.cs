@@ -43,11 +43,57 @@ public class NewInputManager : MonoBehaviour
     /*----- Link Managers -----*/
     public NewCanvasManager CanvasManager;
     #endregion
+    #region Button Locks
+    /*----- Button Locks -----*/
+    /// <summary>
+    /// Whether jump button has been down last frame.
+    /// </summary>
+    private bool _jumpLock = false;
+
+    /// <summary>
+    /// Whether interact button has been down last frame.
+    /// </summary>
+    private bool _interactLock = false;
+    #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
     /*----- Work Area -----*/
     private void Update()
     {
+        if(Input.GetKey(KeyCode.A) || CanvasManager.ButtonClicking["L"])
+        {
+            Left.Invoke();
+        }
+        if(Input.GetKey(KeyCode.D) || CanvasManager.ButtonClicking["R"])
+        {
+            Right.Invoke();
+        }
+        if(Input.GetKey(KeyCode.W) || CanvasManager.ButtonClicking["U"])
+        {
+            Up.Invoke();
+        }
+        if(Input.GetKey(KeyCode.S) || CanvasManager.ButtonClicking["D"])
+        {
+            Down.Invoke();
+        }
+        if(Input.GetKeyDown(KeyCode.Space) || CanvasManager.ButtonClicking["J"] && !_jumpLock)
+        {
+            Jump.Invoke();
+            _jumpLock = true;
+        }
+        if(!CanvasManager.ButtonClicking["J"])
+        {
+            _jumpLock = false;
+        }
+        if(Input.GetKeyDown(KeyCode.E) || CanvasManager.ButtonClicking["I"] && !_interactLock)
+        {
+            Interact.Invoke();
+            _interactLock = true;
+        }
+        if (!CanvasManager.ButtonClicking["I"])
+        {
+            _interactLock = false;
+        }
     }
     #endregion
 }

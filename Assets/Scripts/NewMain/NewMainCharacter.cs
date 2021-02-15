@@ -148,10 +148,5 @@ public class NewMainCharacter : MonoBehaviour
     private void Start()
     {
     }
-
-    private void Update()
-    {
-        
-    }
     #endregion
 }
