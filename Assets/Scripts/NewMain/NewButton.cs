@@ -30,7 +30,10 @@ public class NewButton : Button, IPointerDownHandler, IPointerUpHandler
     #endregion
     #region En/Dis|abled
     /*----- En/Dis|abled -----*/
-
+    /// <summary>
+    /// Adjust ablility to be pressed.
+    /// </summary>
+    public bool Pressable;
     #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
@@ -50,6 +53,11 @@ public class NewButton : Button, IPointerDownHandler, IPointerUpHandler
     {
         base.Awake();
         _name = gameObject.name.Substring(6);
+    }
+
+    private void Update()
+    {
+        interactable = Pressable;
     }
     #endregion
 }

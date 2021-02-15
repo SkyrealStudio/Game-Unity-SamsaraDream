@@ -1,4 +1,5 @@
 *.meta
+.vs/
 Assembly-CSharp.csproj
 EmptyProject.sln
 Game-Unity-SamsaraDream-all.sln
@@ -10,3 +11,4 @@ Packages/
 ProjectSettings/
 Temp/
 UserSettings/
+Library/
