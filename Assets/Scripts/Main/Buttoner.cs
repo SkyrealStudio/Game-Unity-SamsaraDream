@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 //官方文档:https://docs.unity3d.com/530/Documentation/ScriptReference/EventSystems.EventTriggerType.html
 public class Buttoner : MonoBehaviour
 {
+    public UnityEvent ClickEvent = new UnityEvent();
     public bool pressed;
 
     private void AddTriggersListener(GameObject obj, EventTriggerType eventID, UnityAction<BaseEventData> action)
@@ -42,6 +43,7 @@ public class Buttoner : MonoBehaviour
     public void MPress(BaseEventData bEData)
     {
         pressed = true;
+        ClickEvent.Invoke();
         //Debug.Log("MyOnPressed Called.");
     }
 

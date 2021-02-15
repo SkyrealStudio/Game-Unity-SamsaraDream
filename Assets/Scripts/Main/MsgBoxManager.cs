@@ -79,6 +79,8 @@ public class MsgBoxManager : MonoBehaviour
     private float _textAlpha_percentCurrent;
 
     private bool _stableFlag;
+    public bool StableFlag { get => _stableFlag; set => _stableFlag = value; }
+
     private bool _TabOpenedFlag;
 
 
@@ -246,6 +248,7 @@ public class MsgBoxManager : MonoBehaviour
             _status = value;
         }
     }
+
 
     private bool _SwitchingTab(bool mode)
     {
@@ -421,6 +424,12 @@ public class MsgBoxManager : MonoBehaviour
             else if (nowString[_msgPointer] == '~')
             {
                 _SetNowTypeForm(_TypeForm.Clear);
+                _Type();
+                _msgPointer++;
+            }
+            else if (nowString[_msgPointer] == '\\')
+            {
+                _textout += System.Environment.NewLine;
                 _Type();
                 _msgPointer++;
             }

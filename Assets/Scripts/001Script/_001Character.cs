@@ -4,12 +4,17 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using System;
 
 public class _001Character : MonoBehaviour
 {
-    public UnityEvent doorEvent;
+    public UnityEvent<Collider2D> DoorEventIn_OnWall = new UnityEvent<Collider2D>();
+    public UnityEvent<Collider2D> DoorEventExit_OnWall = new UnityEvent<Collider2D>();
+    public UnityEvent GenerateGroundEvent = new UnityEvent();
 
-    public _001Manager gm;
+    public UnityEvent<Collider2D,GameObject> DoorEventOpenerIn = new UnityEvent<Collider2D, GameObject>();
+    public UnityEvent<Collider2D,GameObject> DoorEventOpenerExit = new UnityEvent<Collider2D, GameObject>();
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -22,23 +27,28 @@ public class _001Character : MonoBehaviour
 
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collider2D)
     {
-        if (collision.gameObject.tag == "TempTag")
+        if (collider2D.gameObject.tag == "001GenerateKey")
         {
-            Instantiate(gm.groundGroup, (gm.V3_groundGroupPre += new Vector3(gm.groundFloatAdd, 0f, 0f)), gm.groundGroup.transform.rotation);
+            GenerateGroundEvent.Invoke();
+            collider2D.gameObject.SetActive(false);
         }
-        if (collision.gameObject.tag == "001door")
+        if(collider2D.gameObject.tag == "001doorOpener")
         {
-            doorEvent.Invoke();
+            DoorEventOpenerIn.Invoke(collider2D, collider2D.gameObject.transform.GetChild(0).gameObject);
+        }
+        if (collider2D.gameObject.tag == "001door_OnWall")
+        {
+            DoorEventIn_OnWall.Invoke(collider2D);
         }
     }
 
-    private void OnTriggerStay2D(Collider2D collision)
+    private void OnTriggerExit2D(Collider2D collider2D)
     {
-        if (collision.gameObject.tag == "001door")
+        if (collider2D.gameObject.tag == "001door_OnWall")
         {
-            doorEvent.Invoke();
+            DoorEventExit_OnWall.Invoke(collider2D);
         }
     }
 }
