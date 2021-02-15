@@ -10,10 +10,13 @@ public class _001Character : MonoBehaviour
 {
     public UnityEvent<Collider2D> DoorEventIn_OnWall = new UnityEvent<Collider2D>();
     public UnityEvent<Collider2D> DoorEventExit_OnWall = new UnityEvent<Collider2D>();
+
+
     public UnityEvent GenerateGroundEvent = new UnityEvent();
 
     public UnityEvent<Collider2D,GameObject> DoorEventOpenerIn = new UnityEvent<Collider2D, GameObject>();
     public UnityEvent<Collider2D,GameObject> DoorEventOpenerExit = new UnityEvent<Collider2D, GameObject>();
+    public UnityEvent<Collider2D, GameObject> DoorEventLockerIn = new UnityEvent<Collider2D, GameObject>();
     
     // Start is called before the first frame update
     void Start()
@@ -34,13 +37,20 @@ public class _001Character : MonoBehaviour
             GenerateGroundEvent.Invoke();
             collider2D.gameObject.SetActive(false);
         }
-        if(collider2D.gameObject.tag == "001doorOpener")
-        {
-            DoorEventOpenerIn.Invoke(collider2D, collider2D.gameObject.transform.GetChild(0).gameObject);
-        }
+
         if (collider2D.gameObject.tag == "001door_OnWall")
         {
             DoorEventIn_OnWall.Invoke(collider2D);
+        }
+
+        if (collider2D.gameObject.tag == "001doorOpener")
+        {
+            DoorEventOpenerIn.Invoke(collider2D, collider2D.transform.parent.Find("door").gameObject);
+        }
+
+        if(collider2D.gameObject.tag == "001doorLocker")
+        {
+            DoorEventLockerIn.Invoke(collider2D, collider2D.transform.parent.Find("door").gameObject);
         }
     }
 
@@ -49,6 +59,10 @@ public class _001Character : MonoBehaviour
         if (collider2D.gameObject.tag == "001door_OnWall")
         {
             DoorEventExit_OnWall.Invoke(collider2D);
+        }
+        if (collider2D.gameObject.tag == "001doorOpener")
+        {
+            DoorEventOpenerExit.Invoke(collider2D, collider2D.transform.parent.Find("door").gameObject);
         }
     }
 }

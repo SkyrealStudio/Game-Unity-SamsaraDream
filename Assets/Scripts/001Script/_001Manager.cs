@@ -68,6 +68,8 @@ public class _001Manager : MonoBehaviour
 
     public float speedX;
     private bool _isFirst = true;
+
+    private bool _allowInteract = false;
     //public float settledValue_x;
 
     private Vector3 positionOrigion;
@@ -94,14 +96,16 @@ public class _001Manager : MonoBehaviour
         positionOrigion = mainCharacter.transform.position;
         _stopMoving();
 
+        characterManager.GenerateGroundEvent.AddListener(_GenNewGround);
+
         characterManager.DoorEventIn_OnWall.AddListener(_MakeDoor_OnWall_In);
         characterManager.DoorEventExit_OnWall.AddListener(_MakeDoor_OnWall_Exit);
-        characterManager.GenerateGroundEvent.AddListener(_GenNewGround);
+        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethod_OnWall_OnClick);
 
         characterManager.DoorEventOpenerIn.AddListener(_MakeDoor_In);
         characterManager.DoorEventOpenerExit.AddListener(_MakeDoor_Exit);
-
-        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethod_OnWall_OnClick);
+        characterManager.DoorEventLockerIn.AddListener(_DoorMethod_OnLockTrigger);
+        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethodOpener_OnClick);
 
         //----The First Word
         _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
@@ -125,60 +129,15 @@ public class _001Manager : MonoBehaviour
         _door_OnWallCollider2D.gameObject.GetComponent<SpriteRenderer>().material.SetFloat("_lineWidth", 1);
         _door_OnWallCollider2D.gameObject.GetComponent<SpriteRenderer>().material.SetVector("_lineColor", new Vector4(1, 1, 0, 1));//yellow
         _door_OnWallCollider2D = collider2D;
+
+        _allowInteract = true;
     }
 
     private void _MakeDoor_OnWall_Exit(Collider2D collider2D)
     {
         _door_OnWallCollider2D.gameObject.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default"));
         _door_OnWallCollider2D = null;
-    }
-
-
-    //----Normal Door
-    private void _MakeDoor_Exit(Collider2D collider2D, GameObject goDoor)
-    {
-        goDoor.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default"));
-    }
-
-    private void _MakeDoor_In(Collider2D collider2D, GameObject goDoor)
-    {
-        _doorOpenerCollider2D = collider2D;
-
-        _preDoor = goDoor;
-
-        goDoor.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Custom/shader001"));
-        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_AspectRatio", 0.36f);//[Tip][20210214]这里目前是手动的
-        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_PixelPreUnit", 32);//[Tip][20210214]这里目前是手动的
-        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_lineWidth", 1);
-        goDoor.GetComponent<SpriteRenderer>().material.SetVector("_lineColor", new Vector4(1, 1, 0, 1));//yellow
-    }
-    
-    private void _DoorMethodOpenDoor()
-    {
-        if (_doorOpenerCollider2D == null) return;
-
-    }
-    
-    private void _DoorMethod_OnClick()
-    {
-        _preDoor.GetComponent<Collider2D>().isTrigger = true;
-        if (_doorOpenerCollider2D == null) return;
-        else
-        {
-            ////if (buttoners[(int)inputManager.InputManager.EnumStatus.Interact].pressed)
-            ////{
-            //if (_doorCollider2D.gameObject.tag == "001door")
-            //{
-            //    _doorCollider2D.gameObject.tag = "001door_touched";
-            //    //[Tip][20210214]door在这里延迟一会需要播放动画
-            //    if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hidding)
-            //    {
-            //        _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
-            //        thingsToSayPointer++;
-            //    }
-            //}
-            
-        }
+        _allowInteract = false;
     }
 
     private void _DoorMethod_OnWall_OnClick()
@@ -194,7 +153,7 @@ public class _001Manager : MonoBehaviour
                 //[Tip][20210214]door在这里延迟一会需要播放动画
                 if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hidding)
                 {
-                    _StartShowThing(thingsToSay[thingsToSayPointer],mbmBg);
+                    _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
                     thingsToSayPointer++;
                 }
             }
@@ -204,9 +163,54 @@ public class _001Manager : MonoBehaviour
                 {
                     _StartShowThing("锁上了^~", mbmNormal);
                 }
-            
+
             }
         }
+    }
+
+    //----Normal Door
+    private void _MakeDoor_In(Collider2D collider2D, GameObject goDoor)
+    {
+        _doorOpenerCollider2D = collider2D;
+        _preDoor = goDoor;
+
+        goDoor.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Custom/shader001"));
+        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_AspectRatio", 0.36f);//[Tip][20210214]这里目前是手动的
+        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_PixelPreUnit", 32);//[Tip][20210214]这里目前是手动的
+        goDoor.GetComponent<SpriteRenderer>().material.SetFloat("_lineWidth", 1);
+        goDoor.GetComponent<SpriteRenderer>().material.SetVector("_lineColor", new Vector4(1, 1, 0, 1));//yellow
+        _allowInteract = true;
+    }
+
+    private void _MakeDoor_Exit(Collider2D collider2D, GameObject goDoor)
+    {
+        _preDoor = null;
+        goDoor.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default"));
+        _allowInteract = false;
+    }
+    
+    private void _DoorMethodOpener_OnClick()
+    {
+        if (_preDoor == null) return;
+        if(_preDoor.transform.position.x - characterManager.gameObject.transform.position.x > 0)
+        {
+            //开门动画
+            _preDoor.GetComponent<_001NormalDoorAnimator>().OpenMe();
+            _preDoor.GetComponent<Collider2D>().isTrigger = true;
+            _allowInteract = false;
+        }
+        else
+        {
+            _StartShowThing("锁上了^~", mbmNormal);
+        }
+    }
+    
+    private void _DoorMethod_OnLockTrigger(Collider2D collider2D,GameObject goDoor)
+    {
+        //关门动画
+        goDoor.GetComponent<_001NormalDoorAnimator>().CloseMe();
+        goDoor.GetComponent<Collider2D>().isTrigger = false;
+        _preDoor = goDoor;
     }
     
     /// <summary>
@@ -263,8 +267,8 @@ public class _001Manager : MonoBehaviour
             {
                 if (buttoner.gameObject.name == "ButtonI" && mode)
                 {
-                    buttoner.gameObject.SetActive(_door_OnWallCollider2D || _doorOpenerCollider2D);
-                    buttoner.gameObject.GetComponent<Button>().interactable = (_door_OnWallCollider2D || _doorOpenerCollider2D);
+                    buttoner.gameObject.SetActive(_allowInteract);
+                    buttoner.gameObject.GetComponent<Button>().interactable = (_allowInteract);
                     continue;
                 }
                 buttoner.gameObject.SetActive(mode);
