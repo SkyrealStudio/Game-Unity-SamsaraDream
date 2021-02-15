@@ -28,6 +28,10 @@ public class NewButton : Button, IPointerDownHandler, IPointerUpHandler
     /// </summary>
     public bool Pressing { get => _pressing; }
     #endregion
+    #region En/Dis|abled
+    /*----- En/Dis|abled -----*/
+
+    #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
     public override void OnPointerDown(PointerEventData _PED)
