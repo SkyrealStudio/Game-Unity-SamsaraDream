@@ -7,6 +7,10 @@ using System;
 /// </summary>
 public class NewInputManager : MonoBehaviour
 {
+    #region Link Managers
+    /*----- Link Managers -----*/
+    public NewCanvasManager CanvasManager;
+    #endregion
     #region Public Events
     /*----- Public Events -----*/
     /// <summary>
@@ -38,10 +42,16 @@ public class NewInputManager : MonoBehaviour
     /// Interact event.
     /// </summary>
     public UnityEvent Interact;
-    #endregion
-    #region Link Managers
-    /*----- Link Managers -----*/
-    public NewCanvasManager CanvasManager;
+
+    /// <summary>
+    /// No vertical movement event.
+    /// </summary>
+    public UnityEvent NoVertical;
+
+    /// <summary>
+    /// No Horizontal movement event.
+    /// </summary>
+    public UnityEvent NoHorizontal;
     #endregion
     #region Button Locks
     /*----- Button Locks -----*/
@@ -57,24 +67,37 @@ public class NewInputManager : MonoBehaviour
     #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
-    /*----- Work Area -----*/
     private void Update()
     {
-        if(Input.GetKey(KeyCode.A) || CanvasManager.ButtonClicking["L"])
+        if (Input.GetKey(KeyCode.A) || CanvasManager.ButtonClicking["L"])
         {
             Left.Invoke();
         }
-        if(Input.GetKey(KeyCode.D) || CanvasManager.ButtonClicking["R"])
+        else
         {
-            Right.Invoke();
+            if (Input.GetKey(KeyCode.D) || CanvasManager.ButtonClicking["R"])
+            {
+                Right.Invoke();
+            }
+            else
+            {
+                NoHorizontal.Invoke();
+            }
         }
         if(Input.GetKey(KeyCode.W) || CanvasManager.ButtonClicking["U"])
         {
             Up.Invoke();
         }
-        if(Input.GetKey(KeyCode.S) || CanvasManager.ButtonClicking["D"])
+        else
         {
-            Down.Invoke();
+            if (Input.GetKey(KeyCode.S) || CanvasManager.ButtonClicking["D"])
+            {
+                Down.Invoke();
+            }
+            else
+            {
+                NoHorizontal.Invoke();
+            }
         }
         if(Input.GetKeyDown(KeyCode.Space) || CanvasManager.ButtonClicking["J"] && !_jumpLock)
         {

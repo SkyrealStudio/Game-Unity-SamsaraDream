@@ -31,6 +31,13 @@ public enum CharacterState
 /// </summary>
 public class NewMainCharacter : MonoBehaviour
 {
+    #region Link Managers
+    /*----- Link Managers -----*/
+    /// <summary>
+    /// Active input manager.
+    /// </summary>
+    public NewInputManager InputManager;
+    #endregion
     #region Events
     /// <summary>
     /// Interact event, exposed to environment.
@@ -48,13 +55,6 @@ public class NewMainCharacter : MonoBehaviour
     /// The 2D physics material attached to this gameObject.
     /// </summary>
     private PhysicsMaterial2D _naturalForces;
-    #endregion
-    #region Link Managers
-    /*----- Link Managers -----*/
-    /// <summary>
-    /// Active input manager.
-    /// </summary>
-    public NewInputManager InputManager;
     #endregion
     #region Player States
     /*----- Player States -----*/
@@ -79,6 +79,11 @@ public class NewMainCharacter : MonoBehaviour
     /// ONLY: Left OR Null OR Right.
     /// </summary>
     public MoveDirection Direction { get => _direction; }
+
+    /// <summary>
+    /// State whether the character can climb.
+    /// </summary>
+    private bool _touchingLadder = false;
     #endregion
     #region Basic Behavior
     /*----- Basic Behavior -----*/
@@ -169,6 +174,9 @@ public class NewMainCharacter : MonoBehaviour
         switch (State)
         {
             case CharacterState.InAirJumppable:
+                _state = CharacterState.InAir;
+                __hop(Direction);
+                break;
             case CharacterState.OnLadder:
                 __hop(Direction);
                 break;
@@ -196,6 +204,7 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void _left()
     {
+        _direction = MoveDirection.Left;
         switch (State)
         {
             case CharacterState.InAir:
@@ -217,6 +226,7 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void _right()
     {
+        _direction = MoveDirection.Right;
         switch (State)
         {
             case CharacterState.InAir:
@@ -238,14 +248,10 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void _up()
     {
-        switch (State)
+        if (_touchingLadder)
         {
-            case CharacterState.OnLadder:
-                __climb(MoveDirection.Up);
-                break;
-            default:
-                // Do nothing.
-                break;
+            _state = CharacterState.OnLadder;
+            __climb(MoveDirection.Up);
         }
     }
 
@@ -255,20 +261,32 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void _down()
     {
-        switch (State)
+        if (_touchingLadder)
         {
-            case CharacterState.OnLadder:
-                __climb(MoveDirection.Down);
-                break;
-            default:
-                // Do nothing.
-                break;
+            _state = CharacterState.OnLadder;
+            __climb(MoveDirection.Down);
         }
+    }
+
+    /// <summary>
+    /// Handles no horizontal key event from input manager.<br />
+    /// Should do: Reset direction AND Stop animation.
+    /// </summary>
+    private void _horizontalStop()
+    {
+        _direction = MoveDirection.Null;
+    }
+
+    /// <summary>
+    /// Handles no vertical key event from input manager.<br />
+    /// Should do: Stop animation.
+    /// </summary>
+    private void _verticalStop()
+    {
     }
     #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
-    /*----- Work Area -----*/
     private void Awake()
     {
         // Bind.
@@ -290,6 +308,8 @@ public class NewMainCharacter : MonoBehaviour
         InputManager.Down.AddListener(_down);
         InputManager.Jump.AddListener(_jump);
         InputManager.Interact.AddListener(_interact);
+        InputManager.NoHorizontal.AddListener(_horizontalStop);
+        InputManager.NoVertical.AddListener(_verticalStop);
     }
     #endregion
 }
