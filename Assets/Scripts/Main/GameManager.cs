@@ -280,7 +280,7 @@ public class GameManager : MonoBehaviour
 
 
         //----UI----
-        buttoners[(int)EnumStatus.Interact].gameObject.GetComponent<Button>().interactable = nowInteract_possibly ? true : false;
-        buttoners[(int)EnumStatus.Up].gameObject.GetComponent<Button>().interactable =buttoners[(int)EnumStatus.Down].gameObject.GetComponent<Button>().interactable = isLaddering ? true : false;
+        buttoners[(int)EnumStatus.Interact].gameObject.GetComponent<Button>().interactable = nowInteract_possibly;
+        buttoners[(int)EnumStatus.Up].gameObject.GetComponent<Button>().interactable =buttoners[(int)EnumStatus.Down].gameObject.GetComponent<Button>().interactable = isLaddering;
     }
 }
