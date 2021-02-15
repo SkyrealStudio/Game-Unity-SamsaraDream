@@ -1,34 +1,41 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
+#region Enums
+/*----- Enums -----*/
+/// <summary>
+/// Directions of character movement.
+/// </summary>
+public enum MoveDirection
+{
+    Up,
+    Down,
+    Left,
+    Right,
+    Null
+}
+
+/// <summary>
+/// States of character pose( & ability to act).
+/// </summary>
+public enum CharacterState
+{
+    InAir,
+    InAirJumppable,
+    OnGround,
+    OnLadder
+}
+#endregion
 /// <summary>
 /// Script for main character.
 /// </summary>
 public class NewMainCharacter : MonoBehaviour
 {
-    #region Enums
-    /*----- Enums -----*/
+    #region Events
     /// <summary>
-    /// Directions of character movement.
+    /// Interact event, exposed to environment.
     /// </summary>
-    private enum MoveDirection
-    {
-        Up,
-        Down,
-        Left,
-        Right,
-        Null
-    }
-
-    /// <summary>
-    /// States of character pose( & ability to act).
-    /// </summary>
-    private enum CharacterState
-    {
-        InAir,
-        InAirJumppable,
-        OnGround,
-        OnLadder
-    }
+    public UnityEvent Interact;
     #endregion
     #region Components
     /*----- Components -----*/
@@ -48,6 +55,30 @@ public class NewMainCharacter : MonoBehaviour
     /// Active input manager.
     /// </summary>
     public NewInputManager InputManager;
+    #endregion
+    #region Player States
+    /*----- Player States -----*/
+    /// <summary>
+    /// Character state.
+    /// </summary>
+    private CharacterState _state;
+
+    /// <summary>
+    /// Character state.
+    /// </summary>
+    public CharacterState State { get => _state; }
+
+    /// <summary>
+    /// Character direction.<br />
+    /// ONLY: Left OR Null OR Right.
+    /// </summary>
+    private MoveDirection _direction;
+
+    /// <summary>
+    /// Character direction.<br />
+    /// ONLY: Left OR Null OR Right.
+    /// </summary>
+    public MoveDirection Direction { get => _direction; }
     #endregion
     #region Basic Behavior
     /*----- Basic Behavior -----*/
@@ -127,6 +158,114 @@ public class NewMainCharacter : MonoBehaviour
         }
     }
     #endregion
+    #region Button Behavior
+    /*----- Button Behavior -----*/
+    /// <summary>
+    /// Handles jump event from input manager.<br />
+    /// Should do: Jump OR Hop.
+    /// </summary>
+    private void _jump()
+    {
+        switch (State)
+        {
+            case CharacterState.InAirJumppable:
+            case CharacterState.OnLadder:
+                __hop(Direction);
+                break;
+            case CharacterState.OnGround:
+                __jump(Direction);
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles interact event from input manager.<br />
+    /// Should do: Interact.
+    /// </summary>
+    private void _interact()
+    {
+        Interact.Invoke();
+    }
+
+    /// <summary>
+    /// Handles left key event from input manager.<br />
+    /// Should do: Glide left OR Walk left.
+    /// </summary>
+    private void _left()
+    {
+        switch (State)
+        {
+            case CharacterState.InAir:
+            case CharacterState.InAirJumppable:
+                __glide(MoveDirection.Left);
+                break;
+            case CharacterState.OnGround:
+                __walk(MoveDirection.Left);
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles right key event from input manager.<br />
+    /// Should do: Glide right OR Walk right.
+    /// </summary>
+    private void _right()
+    {
+        switch (State)
+        {
+            case CharacterState.InAir:
+            case CharacterState.InAirJumppable:
+                __glide(MoveDirection.Right);
+                break;
+            case CharacterState.OnGround:
+                __walk(MoveDirection.Right);
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles up key event from input manager.<br />
+    /// Should do: Grab the ladder OR Climb up the ladder.
+    /// </summary>
+    private void _up()
+    {
+        switch (State)
+        {
+            case CharacterState.OnLadder:
+                __climb(MoveDirection.Up);
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles down key event from input mananger.<br />
+    /// Should do: Grab the ladder OR Climb down the ladder.
+    /// </summary>
+    private void _down()
+    {
+        switch (State)
+        {
+            case CharacterState.OnLadder:
+                __climb(MoveDirection.Down);
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+    #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
     /*----- Work Area -----*/
@@ -143,10 +282,14 @@ public class NewMainCharacter : MonoBehaviour
         _rigidbody.mass = 1f;
         _naturalForces.bounciness = 0f;
         _naturalForces.friction = 1f;
-    }
 
-    private void Start()
-    {
+        // Bind input handler.
+        InputManager.Left.AddListener(_left);
+        InputManager.Right.AddListener(_right);
+        InputManager.Up.AddListener(_up);
+        InputManager.Down.AddListener(_down);
+        InputManager.Jump.AddListener(_jump);
+        InputManager.Interact.AddListener(_interact);
     }
     #endregion
 }
