@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using System.Collections.Generic;
 
 /// <summary>
@@ -7,6 +6,8 @@ using System.Collections.Generic;
 /// </summary>
 public class NewCanvasManager : MonoBehaviour
 {
+    #region Button Status
+    /*----- Button Status -----*/
     /// <summary>
     /// Events called by buttons.
     /// </summary>
@@ -18,26 +19,13 @@ public class NewCanvasManager : MonoBehaviour
     public Dictionary<string, bool> ButtonClicking { get => _buttonClicking; }
 
     /// <summary>
-    /// Load a layout prefab.
-    /// </summary>
-    private void _loadLayout(string _LayoutName)
-    {
-        GameObject Layout = Instantiate(Resources.Load<GameObject>(_LayoutName));
-        Layout.transform.parent = transform;
-        Layout.transform.localPosition = Vector3.zero;
-        Layout.transform.localScale = Vector3.one;
-        Layout.name = _LayoutName;
-        _generateButtons(Layout);
-    }
-    
-    /// <summary>
     /// Load button states upon the root game object.
     /// </summary>
     private void _generateButtons(GameObject _Root)
     {
         _buttonClicking.Clear();
         NewButton[] Buttons = _Root.GetComponentsInChildren<NewButton>();
-        foreach(NewButton Button in Buttons)
+        foreach (NewButton Button in Buttons)
         {
             _buttonClicking.Add(Button.Name, Button.Pressing);
         }
@@ -54,6 +42,22 @@ public class NewCanvasManager : MonoBehaviour
             _buttonClicking[Button.Name] = Button.Pressing;
         }
     }
+    #endregion
+    #region Layout
+    /*----- Layout -----*/
+    /// <summary>
+    /// Load a layout prefab.
+    /// </summary>
+    private void _loadLayout(string _LayoutName)
+    {
+        GameObject Layout = Instantiate(Resources.Load<GameObject>(_LayoutName));
+        Layout.transform.parent = transform;
+        Layout.transform.localPosition = Vector3.zero;
+        Layout.transform.localScale = Vector3.one;
+        Layout.name = _LayoutName;
+        _generateButtons(Layout);
+    }
+    #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
     private void Start()
