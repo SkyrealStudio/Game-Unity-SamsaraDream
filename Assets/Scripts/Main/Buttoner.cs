@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 
 //UnityUI事件:https://www.cnblogs.com/llstart-new0201/p/7102868.html
 //官方文档:https://docs.unity3d.com/530/Documentation/ScriptReference/EventSystems.EventTriggerType.html
+
 public class Buttoner : MonoBehaviour
 {
     public UnityEvent ClickEvent = new UnityEvent();
