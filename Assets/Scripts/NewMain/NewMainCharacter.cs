@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 #region Enums
 /*----- Enums -----*/
@@ -55,6 +56,11 @@ public class NewMainCharacter : MonoBehaviour
     /// The 2D physics material attached to this gameObject.
     /// </summary>
     private PhysicsMaterial2D _naturalForces;
+
+    /// <summary>
+    /// The list of collisions of this game object.
+    /// </summary>
+    private NewCollisionList _collisionList;
     #endregion
     #region Player States
     /*----- Player States -----*/
@@ -92,16 +98,8 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void __jump(MoveDirection _Direction)
     {
-        __hop(_Direction);
-        __hop(_Direction);
-    }
-
-    /// <summary>
-    /// Perform a hop in the air.
-    /// </summary>
-    private void __hop(MoveDirection _Direction)
-    {
-        switch(_Direction)
+        _rigidbody.AddForce(new Vector2(0f, 7f), ForceMode2D.Impulse);
+        switch (_Direction)
         {
             case MoveDirection.Left:
                 _rigidbody.AddForce(new Vector2(-1.5f, 0f), ForceMode2D.Impulse);
@@ -113,7 +111,26 @@ public class NewMainCharacter : MonoBehaviour
                 // No side acceleration.
                 break;
         }
-        _rigidbody.AddForce(new Vector2(0f, 4f), ForceMode2D.Impulse);
+    }
+
+    /// <summary>
+    /// Perform a hop in the air.
+    /// </summary>
+    private void __hop(MoveDirection _Direction)
+    {
+        _rigidbody.AddForce(new Vector2(0f, 3f), ForceMode2D.Impulse);
+        switch (_Direction)
+        {
+            case MoveDirection.Left:
+                _rigidbody.AddForce(new Vector2(-.75f, 0f), ForceMode2D.Impulse);
+                break;
+            case MoveDirection.Right:
+                _rigidbody.AddForce(new Vector2(.75f, 0f), ForceMode2D.Impulse);
+                break;
+            default:
+                // No side acceleration.
+                break;
+        }
     }
 
     /// <summary>
@@ -121,8 +138,24 @@ public class NewMainCharacter : MonoBehaviour
     /// </summary>
     private void __walk(MoveDirection _Direction)
     {
-        __glide(_Direction);
-        __glide(_Direction);
+        switch (_Direction)
+        {
+            case MoveDirection.Left:
+                if (_rigidbody.velocity.x > -5f)
+                {
+                    _rigidbody.AddForce(new Vector2(-20f, 0f));
+                }
+                break;
+            case MoveDirection.Right:
+                if (_rigidbody.velocity.x < 5f)
+                {
+                    _rigidbody.AddForce(new Vector2(20f, 0f));
+                }
+                break;
+            default:
+                // No side acceleration.
+                break;
+        }
     }
 
     /// <summary>
@@ -133,10 +166,16 @@ public class NewMainCharacter : MonoBehaviour
         switch (_Direction)
         {
             case MoveDirection.Left:
-                _rigidbody.AddForce(new Vector2(-.5f, 0f));
+                if(_rigidbody.velocity.x > -3f)
+                {
+                    _rigidbody.AddForce(new Vector2(-4f, 0f));
+                }
                 break;
             case MoveDirection.Right:
-                _rigidbody.AddForce(new Vector2(.5f, 0f));
+                if(_rigidbody.velocity.x < 3f)
+                {
+                    _rigidbody.AddForce(new Vector2(4f, 0f));
+                }
                 break;
             default:
                 // No side acceleration.
@@ -208,6 +247,8 @@ public class NewMainCharacter : MonoBehaviour
         switch (State)
         {
             case CharacterState.InAir:
+                __glide(MoveDirection.Left);
+                break;
             case CharacterState.InAirJumppable:
                 __glide(MoveDirection.Left);
                 break;
@@ -230,6 +271,8 @@ public class NewMainCharacter : MonoBehaviour
         switch (State)
         {
             case CharacterState.InAir:
+                __glide(MoveDirection.Right);
+                break;
             case CharacterState.InAirJumppable:
                 __glide(MoveDirection.Right);
                 break;
@@ -291,7 +334,8 @@ public class NewMainCharacter : MonoBehaviour
     {
         // Bind.
         _rigidbody = gameObject.GetComponent<Rigidbody2D>();
-        _naturalForces = gameObject.GetComponent<CapsuleCollider2D>().sharedMaterial;
+        _naturalForces = GameObject.FindGameObjectWithTag("Ground").GetComponent<Collider2D>().sharedMaterial;
+        _collisionList = gameObject.GetComponent<NewCollisionList>();
         
         // Initialization.
         _rigidbody.freezeRotation = true;
@@ -299,7 +343,6 @@ public class NewMainCharacter : MonoBehaviour
         _rigidbody.drag = .1f;
         _rigidbody.mass = 1f;
         _naturalForces.bounciness = 0f;
-        _naturalForces.friction = 1f;
 
         // Bind input handler.
         InputManager.Left.AddListener(_left);
@@ -310,6 +353,49 @@ public class NewMainCharacter : MonoBehaviour
         InputManager.Interact.AddListener(_interact);
         InputManager.NoHorizontal.AddListener(_horizontalStop);
         InputManager.NoVertical.AddListener(_verticalStop);
+    }
+
+    private void FixedUpdate()
+    {
+        if (State == CharacterState.OnGround)
+        {
+            if (_naturalForces.friction < .9f)
+            {
+                _naturalForces.friction += Time.fixedDeltaTime;
+            }
+            else
+            {
+                _naturalForces.friction = .9f;
+            }
+        }
+        else
+        {
+            _naturalForces.friction = 0f;
+        }
+        Dictionary<GameObject, Collision2D> gnd = _collisionList.TaggedList("Ground");
+        _touchingLadder = _collisionList.TaggedList("Ladder").Count > 0;
+        bool SteppingGround = false;
+        foreach (Collision2D collision in gnd.Values)
+        {
+            foreach (ContactPoint2D point in collision.contacts)
+            {
+                if (transform.position.y - point.point.y >= 1f)
+                {
+                    SteppingGround = true;
+                }
+            }
+        }
+        if (SteppingGround)
+        {
+            _state = CharacterState.OnGround;
+        }
+        else
+        {
+            if (State != CharacterState.InAir && State != CharacterState.InAirJumppable)
+            {
+                _state = CharacterState.InAirJumppable;
+            }
+        }
     }
     #endregion
 }

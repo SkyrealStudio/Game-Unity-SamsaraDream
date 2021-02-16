@@ -67,7 +67,7 @@ public class NewInputManager : MonoBehaviour
     #endregion
     #region Unity Calls
     /*----- Unity Calls -----*/
-    private void Update()
+    private void FixedUpdate()
     {
         if (Input.GetKey(KeyCode.A) || CanvasManager.ButtonClicking["L"])
         {
@@ -96,7 +96,7 @@ public class NewInputManager : MonoBehaviour
             }
             else
             {
-                NoHorizontal.Invoke();
+                NoVertical.Invoke();
             }
         }
         if(Input.GetKeyDown(KeyCode.Space) || CanvasManager.ButtonClicking["J"] && !_jumpLock)
