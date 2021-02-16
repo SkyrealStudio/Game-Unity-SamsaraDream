@@ -6,17 +6,6 @@ using System.Collections.Generic;
 
 public class MainCharacter : MonoBehaviour
 {
-
-    /// <summary>
-    /// Jump handler.
-    /// </summary>
-    private delegate void _jumpHandler();
-
-    /// <summary>
-    /// Jump event.
-    /// </summary>
-    private event _jumpHandler _jumpEvent;
-
     /// <summary>
     /// Attached game manager.
     /// </summary>

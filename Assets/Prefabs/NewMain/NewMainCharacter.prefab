@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5979122879655084974}
   - component: {fileID: 8548553975348915265}
   - component: {fileID: 7140162125598438919}
+  - component: {fileID: 5897718616573376671}
   m_Layer: 0
   m_Name: NewMainCharacter
   m_TagString: Untagged
@@ -102,7 +103,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 4e7207efc75ae8243a7a06d79d6580b4, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -135,6 +136,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f48cb4453fd0574d8b4b05b7d40f1c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  InputManager: {fileID: 0}
+  Interact:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5897718616573376671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3646578286317193353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee6b063c0eac4184981a3159d7c84b7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6648221817132969742
 GameObject:
   m_ObjectHideFlags: 0
@@ -146,7 +163,7 @@ GameObject:
   - component: {fileID: 1373768194233767623}
   - component: {fileID: 2331184520015991522}
   m_Layer: 0
-  m_Name: Point Light 2D
+  m_Name: Sight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
