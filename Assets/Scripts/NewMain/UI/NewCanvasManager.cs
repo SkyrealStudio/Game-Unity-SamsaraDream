@@ -58,7 +58,7 @@ public class NewCanvasManager : MonoBehaviour
     private void _loadLayout(string _LayoutName)
     {
         GameObject Layout = Instantiate(Resources.Load<GameObject>(_LayoutName));
-        Layout.transform.parent = transform;
+        Layout.transform.SetParent(transform);
         Layout.transform.localPosition = Vector3.zero;
         Layout.transform.localScale = Vector3.one;
         Layout.name = _LayoutName;

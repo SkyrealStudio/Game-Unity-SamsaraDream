@@ -11,5 +11,9 @@ Logs/
 obj/
 ProjectSettings/
 Temp/
+<<<<<<< HEAD
+UserSettings/
+=======
 UserSettings/
 Library/
+>>>>>>> 380eea5b08c94ec1736df2adf176ad9d014811a7

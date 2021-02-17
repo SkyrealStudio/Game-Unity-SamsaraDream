@@ -27,4 +27,11 @@ public class NewGameManager : MonoBehaviour
     /// </summary>
     public NewMainCharacter MainCharacter;
     #endregion
+    #region Unity Calls
+    /*----- Unity Calls -----*/
+    private void Start()
+    {
+        CameraManager.StartFollowing(MainCharacter.gameObject);
+    }
+    #endregion
 }
