@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Experimental.Rendering.Universal;
 
-public class _001NormalDoorAnimator : MonoBehaviour
+public class _001InWallDoorAnimator : MonoBehaviour
 {
     private float _timerAnime = 0.2f;
     public float timeAnime_SetFloat;
@@ -26,13 +26,13 @@ public class _001NormalDoorAnimator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];
+        gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];//关门假象
         _setCaster(0, true);
         _setCaster(1, false);
         _setCaster(2, false);
 
+        _state = EnumState.Open;
         _stableFlag = true;
-        _state = EnumState.Close;
     }
 
     public void OpenMe()
@@ -45,16 +45,16 @@ public class _001NormalDoorAnimator : MonoBehaviour
         _orderQueue.Enqueue(2);
     }
 
-    private void _setCaster(int n,bool mode)
+    private void _setCaster(int n, bool mode)
     {
-        gameObject.transform.Find("CasterUpper" + n.ToString()).gameObject.SetActive(mode);
-        gameObject.transform.Find("CasterLower" + n.ToString()).gameObject.SetActive(mode);
+        //gameObject.transform.Find("CasterUpper" + n.ToString()).gameObject.SetActive(mode);
+        //gameObject.transform.Find("CasterLower" + n.ToString()).gameObject.SetActive(mode);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(_stableFlag)
+        if (_stableFlag)
         {
             if (_orderQueue.Count > 0)
             {
@@ -77,12 +77,12 @@ public class _001NormalDoorAnimator : MonoBehaviour
         }
         else
         {
-            switch(_state)
+            switch (_state)
             {
                 case EnumState.Open:
                     _setCaster(1, false);
                     _setCaster(2, true);
-                    gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
+                    //gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
                     gameObject.GetComponent<SpriteRenderer>().sprite = sprites[2];
                     _stableFlag = true;
                     break;
@@ -92,16 +92,17 @@ public class _001NormalDoorAnimator : MonoBehaviour
                     gameObject.GetComponent<SpriteRenderer>().sprite = sprites[1];
                     //
                     _timerAnime += Time.deltaTime;
-                    if (_timerAnime>timeAnime_SetFloat)
+                    if (_timerAnime > timeAnime_SetFloat)
                     {
                         _timerAnime = 0f;
                         _state = EnumState.Close;
+                        gameObject.tag = "001door_OnWall_touched";
                     }
                     break;
                 case EnumState.Close:
                     _setCaster(1, false);
                     _setCaster(0, true);
-                    gameObject.GetComponent<BoxCollider2D>().isTrigger = false;
+                    //gameObject.GetComponent<BoxCollider2D>().isTrigger = false;
                     gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];
                     _stableFlag = true;
                     break;
@@ -111,7 +112,7 @@ public class _001NormalDoorAnimator : MonoBehaviour
                     gameObject.GetComponent<SpriteRenderer>().sprite = sprites[1];
                     //
                     _timerAnime += Time.deltaTime;
-                    if(_timerAnime>timeAnime_SetFloat)
+                    if (_timerAnime > timeAnime_SetFloat)
                     {
                         _timerAnime = 0f;
                         _state = EnumState.Open;

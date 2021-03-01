@@ -38,7 +38,7 @@ public class _001Character : MonoBehaviour
             collider2D.gameObject.SetActive(false);
         }
 
-        if (collider2D.gameObject.tag == "001door_OnWall")
+        if (collider2D.gameObject.tag == "001door_OnWall" || collider2D.gameObject.tag == "001door_OnWall_touched")
         {
             DoorEventIn_OnWall.Invoke(collider2D);
         }
@@ -56,7 +56,7 @@ public class _001Character : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collider2D)
     {
-        if (collider2D.gameObject.tag == "001door_OnWall")
+        if (collider2D.gameObject.tag == "001door_OnWall" || collider2D.gameObject.tag == "001door_OnWall_touched")
         {
             DoorEventExit_OnWall.Invoke(collider2D);
         }

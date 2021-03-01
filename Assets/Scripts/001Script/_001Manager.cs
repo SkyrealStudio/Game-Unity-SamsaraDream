@@ -13,9 +13,10 @@ public class _001Manager : MonoBehaviour
     public _001Character characterManager;
 
     //public _001BlackGroundText hdbzManager;
-    public MsgBoxManager mbmNormal;
-    public MsgBoxManager mbmBg;
-
+    public MsgBoxManager mbmNormal;//MsgBoxManager_Noramal(Top)
+    public float mbmNormal_Time;
+    public MsgBoxManager mbmBg;//MsgBoxManager_backGround
+    public float mbmBg_Time;
     public enum ScriptState
     {
         OnWaiting,
@@ -79,9 +80,12 @@ public class _001Manager : MonoBehaviour
 
     void Start()
     {
+        SetmbmAlphaTimeSet(mbmBg,mbmBg_Time);
+        SetmbmAlphaTimeSet(mbmNormal, mbmNormal_Time);
+
         _setControlmode(false);
 
-        _l2d_outerRadiusSet = l2dObj.pointLightOuterRadius; 
+        _l2d_outerRadiusSet = l2dObj.pointLightOuterRadius;
         _l2d_IntensitySet = l2dObj.intensity;
 
         l2dObj.pointLightOuterRadius = 0f;
@@ -111,11 +115,15 @@ public class _001Manager : MonoBehaviour
         _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
     }
 
-
+    private void SetmbmAlphaTimeSet( MsgBoxManager mbm , float mbm_Time)
+    {
+        mbm.textAlphaTime_SetFloat = mbm.boxAlphaTime_SetFloat = mbm_Time;
+    }
 
     private void _GenNewGround()
     {
-        Instantiate(groundGroup, (V3_groundGroupPre += new Vector3(groundFloatAdd, 0f, 0f)), groundGroup.transform.rotation, GameObject.Find("GameWorld").transform);
+        GameObject tgo = Instantiate(groundGroup, (V3_groundGroupPre += new Vector3(groundFloatAdd, 0f, 0f)), groundGroup.transform.rotation, GameObject.Find("GameWorld").transform);
+        tgo.transform.Find("ColliderGen").gameObject.SetActive(true);
     }
 
     //----OnWall Door
@@ -147,23 +155,14 @@ public class _001Manager : MonoBehaviour
         {
             //if (buttoners[(int)inputManager.InputManager.EnumStatus.Interact].pressed)
             //{
-            if (_door_OnWallCollider2D.gameObject.tag == "001door")
+            if (_door_OnWallCollider2D.gameObject.tag == "001door_OnWall")
             {
-                _door_OnWallCollider2D.gameObject.tag = "001door_touched";
-                //[Tip][20210214]door在这里延迟一会需要播放动画
-                if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hidding)
-                {
-                    _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
-                    thingsToSayPointer++;
-                }
+                _door_OnWallCollider2D.GetComponent<_001InWallDoorAnimator>().CloseMe();
+                _StartShowThing(thingsToSay[++thingsToSayPointer], mbmBg);
             }
-            if (_door_OnWallCollider2D.gameObject.tag == "001door_touched")
+            else if (_door_OnWallCollider2D.gameObject.tag == "001door_OnWall_touched")
             {
-                if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hidding)
-                {
-                    _StartShowThing("锁上了^~", mbmNormal);
-                }
-
+                _StartShowThing("锁上了^~", mbmNormal);
             }
         }
     }
@@ -196,7 +195,7 @@ public class _001Manager : MonoBehaviour
         {
             //开门动画
             _preDoor.GetComponent<_001NormalDoorAnimator>().OpenMe();
-            _preDoor.GetComponent<Collider2D>().isTrigger = true;
+            _StartShowThing(thingsToSay[++thingsToSayPointer], mbmBg);
             _allowInteract = false;
         }
         else
@@ -209,7 +208,7 @@ public class _001Manager : MonoBehaviour
     {
         //关门动画
         goDoor.GetComponent<_001NormalDoorAnimator>().CloseMe();
-        goDoor.GetComponent<Collider2D>().isTrigger = false;
+        //goDoor.GetComponent<Collider2D>().isTrigger = false;
         _preDoor = goDoor;
     }
     
