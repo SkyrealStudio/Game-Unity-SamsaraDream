@@ -6,12 +6,15 @@ using UnityEditor;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class _001Manager : MonoBehaviour
 {
     public Animator animator;
     public _001Character characterManager;
 
+    public _001UserInput _001UserInputManager;
     //public _001BlackGroundText hdbzManager;
     public MsgBoxManager mbmNormal;//MsgBoxManager_Noramal(Top)
     public float mbmNormal_Time;
@@ -80,6 +83,7 @@ public class _001Manager : MonoBehaviour
 
     void Start()
     {
+        _001UserInputManager.alterTimeSetValue.AddListener(_001userInput_SATS);
         SetmbmAlphaTimeSet(mbmBg,mbmBg_Time);
         SetmbmAlphaTimeSet(mbmNormal, mbmNormal_Time);
 
@@ -115,9 +119,28 @@ public class _001Manager : MonoBehaviour
         _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
     }
 
-    private void SetmbmAlphaTimeSet( MsgBoxManager mbm , float mbm_Time)
+    private void SetmbmAlphaTimeSet( MsgBoxManager mbm, float mbm_Time)
     {
-        mbm.textAlphaTime_SetFloat = mbm.boxAlphaTime_SetFloat = mbm_Time;
+        mbm.curtainTime_SetFloat = mbm.textAlphaTime_SetFloat = mbm.boxAlphaTime_SetFloat = mbm_Time;
+    }
+
+    private void _001userInput_SATS(float mbm_Time,int mode)
+    {
+        switch (mode)
+        {
+            case 0:
+                mbmNormal.timeWaitStateCount_Set = mbm_Time;
+                break;
+            case 1:
+                mbmNormal._AdaptAlphaValueProperties_Set(mbm_Time);
+                break;
+            case 2:
+                mbmBg.timeWaitStateCount_Set = mbm_Time;
+                break;
+            case 3:
+                mbmBg._AdaptAlphaValueProperties_Set(mbm_Time);
+                break;
+        }
     }
 
     private void _GenNewGround()

@@ -164,6 +164,10 @@ public class MsgBoxManager : MonoBehaviour
     {
         if (_SwitchingTab(true))
         {
+            _AdaptAlphaValueProperties(ref curtainTime_SetFloat,true);
+            _AdaptAlphaValueProperties(ref boxAlphaTime_SetFloat, true);
+            _AdaptAlphaValueProperties(ref textAlphaTime_SetFloat, false);
+
             //----Type&Analysis----
             #region Type&Analysis
             switch (_nowtypeForm)
@@ -183,6 +187,7 @@ public class MsgBoxManager : MonoBehaviour
             }
             #endregion
             //----RoleGrayScaling----
+            #region RoleGrayScaling
             for (int i = 0; i < _rolesLength; i++)
             {
                 roles[i].GetComponent<Image>().color
@@ -192,10 +197,10 @@ public class MsgBoxManager : MonoBehaviour
                                 roles[i].GetComponent<Image>().color.a);
                 _setRoleGrayscale(i, _calcModeRoleGrayScaleState(i));
             }
+            #endregion
         }
         else
         {
-            //do nothing
         }
     }
 
@@ -203,7 +208,9 @@ public class MsgBoxManager : MonoBehaviour
     {
         if (_SwitchingTab(false))
         {
-            //codes
+            _AdaptAlphaValueProperties(ref curtainTime_SetFloat, true);
+            _AdaptAlphaValueProperties(ref boxAlphaTime_SetFloat,true);
+            _AdaptAlphaValueProperties(ref textAlphaTime_SetFloat, false);
         }
         else
         {
@@ -248,7 +255,6 @@ public class MsgBoxManager : MonoBehaviour
             _status = value;
         }
     }
-
 
     private bool _SwitchingTab(bool mode)
     {
@@ -324,7 +330,6 @@ public class MsgBoxManager : MonoBehaviour
             return true;
         }
     }
-
 
     private void _setRoleGrayscale(int m_rolePointer,bool mode)
     {
@@ -506,6 +511,20 @@ public class MsgBoxManager : MonoBehaviour
     #endregion
 
     #region playground
+    private float __adaptProperties_vlaue = -1f;
+    public void _AdaptAlphaValueProperties_Set(float f)//just for correctly reset alpha value
+    {
+        __adaptProperties_vlaue = f;   
+    }
+    private void _AdaptAlphaValueProperties(ref float f,bool b)//exec
+    {
+        if(__adaptProperties_vlaue > 0f)
+        {
+            f = __adaptProperties_vlaue;
+            __adaptProperties_vlaue = b ? __adaptProperties_vlaue : - 1f;
+        }
+    }
+
     private bool _IsTouched_Experimental()
     {
         return (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
