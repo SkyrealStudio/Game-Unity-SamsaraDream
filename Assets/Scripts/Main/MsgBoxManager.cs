@@ -290,6 +290,7 @@ public class MsgBoxManager : MonoBehaviour
                         i.SetActive(false);
                 }
                 _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = 0f;
+
                 return _stableFlag;
             }
 
@@ -319,9 +320,7 @@ public class MsgBoxManager : MonoBehaviour
                 _roleAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / roleAlphaTime_SetFloat);
                 _textAlpha_percentCurrent += (mode ? 1f : -1f) * (Time.deltaTime / textAlphaTime_SetFloat);
 
-
                 return _stableFlag;
-
             }
         }
         else
@@ -511,17 +510,17 @@ public class MsgBoxManager : MonoBehaviour
     #endregion
 
     #region playground
-    private float __adaptProperties_vlaue = -1f;
+    private float _Temp_adaptProperties_vlaue = -1f;
     public void _AdaptAlphaValueProperties_Set(float f)//just for correctly reset alpha value
     {
-        __adaptProperties_vlaue = f;   
+        _Temp_adaptProperties_vlaue = f;   
     }
     private void _AdaptAlphaValueProperties(ref float f,bool b)//exec
     {
-        if(__adaptProperties_vlaue > 0f)
+        if(_Temp_adaptProperties_vlaue > 0f)
         {
-            f = __adaptProperties_vlaue;
-            __adaptProperties_vlaue = b ? __adaptProperties_vlaue : - 1f;
+            f = _Temp_adaptProperties_vlaue;
+            _Temp_adaptProperties_vlaue = b ? _Temp_adaptProperties_vlaue : - 1f;
         }
     }
 

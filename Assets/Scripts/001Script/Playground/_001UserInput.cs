@@ -46,4 +46,9 @@ public class _001UserInput : MonoBehaviour
             alterTimeSetValue.Invoke(reVal, nowStatus);
         }
     }
+
+    private void Update()
+    {
+        buttonerSwitch.gameObject.SetActive(inputField.text.Length == 0);
+    }
 }

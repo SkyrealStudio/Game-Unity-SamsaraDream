@@ -68,7 +68,20 @@ public class _001Manager : MonoBehaviour
     {
 
     };
-    public int thingsToSayPointer = 0;
+    private string _NextThingToSay()
+    {
+        if (_thingsToSayPointer == -1)
+        {
+            _thingsToSayPointer++;
+            return thingsToSay[0];
+        }
+        else
+        {
+            return thingsToSay[(++_thingsToSayPointer == thingsToSay.Length) ? (_thingsToSayPointer=0) : _thingsToSayPointer];
+        }
+    }
+
+    private int _thingsToSayPointer = -1;
 
     public float speedX;
     private bool _isFirst = true;
@@ -116,7 +129,7 @@ public class _001Manager : MonoBehaviour
         buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethodOpener_OnClick);
 
         //----The First Word
-        _StartShowThing(thingsToSay[thingsToSayPointer], mbmBg);
+        _StartShowThing(_NextThingToSay(), mbmBg);
     }
 
     private void SetmbmAlphaTimeSet( MsgBoxManager mbm, float mbm_Time)
@@ -124,29 +137,12 @@ public class _001Manager : MonoBehaviour
         mbm.curtainTime_SetFloat = mbm.textAlphaTime_SetFloat = mbm.boxAlphaTime_SetFloat = mbm_Time;
     }
 
-    private void _001userInput_SATS(float mbm_Time,int mode)
-    {
-        switch (mode)
-        {
-            case 0:
-                mbmNormal.timeWaitStateCount_Set = mbm_Time;
-                break;
-            case 1:
-                mbmNormal._AdaptAlphaValueProperties_Set(mbm_Time);
-                break;
-            case 2:
-                mbmBg.timeWaitStateCount_Set = mbm_Time;
-                break;
-            case 3:
-                mbmBg._AdaptAlphaValueProperties_Set(mbm_Time);
-                break;
-        }
-    }
-
     private void _GenNewGround()
     {
         GameObject tgo = Instantiate(groundGroup, (V3_groundGroupPre += new Vector3(groundFloatAdd, 0f, 0f)), groundGroup.transform.rotation, GameObject.Find("GameWorld").transform);
+
         tgo.transform.Find("ColliderGen").gameObject.SetActive(true);
+        tgo.transform.Find("DoorGroup").gameObject.transform.Find("ColliderOpener1").gameObject.SetActive(true);
     }
 
     //----OnWall Door
@@ -181,7 +177,7 @@ public class _001Manager : MonoBehaviour
             if (_door_OnWallCollider2D.gameObject.tag == "001door_OnWall")
             {
                 _door_OnWallCollider2D.GetComponent<_001InWallDoorAnimator>().CloseMe();
-                _StartShowThing(thingsToSay[++thingsToSayPointer], mbmBg);
+                _StartShowThing(_NextThingToSay(), mbmBg);
             }
             else if (_door_OnWallCollider2D.gameObject.tag == "001door_OnWall_touched")
             {
@@ -214,12 +210,17 @@ public class _001Manager : MonoBehaviour
     private void _DoorMethodOpener_OnClick()
     {
         if (_preDoor == null) return;
+
         if(_preDoor.transform.position.x - characterManager.gameObject.transform.position.x > 0)
         {
             //开门动画
             _preDoor.GetComponent<_001NormalDoorAnimator>().OpenMe();
-            _StartShowThing(thingsToSay[++thingsToSayPointer], mbmBg);
+
+            _StartShowThing(_NextThingToSay(), mbmBg);
             _allowInteract = false;
+
+            //set UnActive to the BoxCollider2D
+            _preDoor.transform.parent.Find("ColliderOpener1").gameObject.SetActive(false);
         }
         else
         {
@@ -410,7 +411,6 @@ public class _001Manager : MonoBehaviour
                         {
                             if (_isFirst)
                             {
-                                thingsToSayPointer++;
                                 _StartShowThing("身边一片漆黑。^", mbmNormal);
                                 break;
                             }
@@ -423,4 +423,25 @@ public class _001Manager : MonoBehaviour
                 break;
         }
     }
+
+    #region playground
+    private void _001userInput_SATS(float mbm_Time, int mode)
+    {
+        switch (mode)
+        {
+            case 0:
+                mbmNormal.timeWaitStateCount_Set = mbm_Time;
+                break;
+            case 1:
+                mbmNormal._AdaptAlphaValueProperties_Set(mbm_Time);
+                break;
+            case 2:
+                mbmBg.timeWaitStateCount_Set = mbm_Time;
+                break;
+            case 3:
+                mbmBg._AdaptAlphaValueProperties_Set(mbm_Time);
+                break;
+        }
+    }
+    #endregion
 }
