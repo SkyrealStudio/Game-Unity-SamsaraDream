@@ -1,4 +1,3 @@
-*.meta
 *.bin
 .vs/
 Assembly-CSharp.csproj
