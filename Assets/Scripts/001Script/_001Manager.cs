@@ -325,6 +325,18 @@ public class _001Manager : MonoBehaviour
         }
     }
 
+    private void _setControlmode(bool mode, int specialSetting)
+    {
+        switch (specialSetting)
+        {
+            case 1:
+                foreach (Buttoner buttoner in buttoners)
+                    if(buttoner!=null)buttoner.pressed = false;
+                break;
+        }
+        _setControlmode(mode);
+    }
+
     // Update is called once per frame
 
     public void Update()
@@ -351,10 +363,11 @@ public class _001Manager : MonoBehaviour
         }
         else //_isInteracting == true
         {
-            print("abc");
-            mcAnimator.StopPlayback();
-            mcAnimator.SetInteger("State", -1);
             _stopMoving();
+            mcAnimator.SetInteger("State", -1);
+            mcAnimator.StopPlayback();
+            _setControlmode(false,1);
+            //print("abc");
         }
         //----End of movement----
 
