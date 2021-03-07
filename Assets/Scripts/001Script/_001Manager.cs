@@ -11,7 +11,7 @@ using UnityEngine.EventSystems;
 
 public class _001Manager : MonoBehaviour
 {
-    public Animator animator;
+    public Animator mcAnimator;
     public _001Character characterManager;
 
     public _001UserInput _001UserInputManager;
@@ -77,6 +77,7 @@ public class _001Manager : MonoBehaviour
         }
         else
         {
+            //loop
             return thingsToSay[(++_thingsToSayPointer == thingsToSay.Length) ? (_thingsToSayPointer=0) : _thingsToSayPointer];
         }
     }
@@ -93,6 +94,13 @@ public class _001Manager : MonoBehaviour
     private Collider2D _door_OnWallCollider2D;
     private Collider2D _doorOpenerCollider2D;
     private GameObject _preDoor;
+
+    private bool _isMsgBoxing = false;
+
+    private void _setMsgBoxing(bool b)
+    {
+        _isMsgBoxing = b;
+    }
 
     void Start()
     {
@@ -128,7 +136,17 @@ public class _001Manager : MonoBehaviour
         characterManager.DoorEventLockerIn.AddListener(_DoorMethod_OnLockTrigger);
         buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethodOpener_OnClick);
 
+        //when Interact, stop movement
+        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_stopMoving);
+        
+        mbmNormal.exitEvent.AddListener(_setMsgBoxing);
+        mbmNormal.exitEvent.AddListener(_setControlmode);
+
+        mbmBg.exitEvent.AddListener(_setMsgBoxing);
+        mbmBg.exitEvent.AddListener(_setControlmode);
+
         //----The First Word
+        _stopMoving();
         _StartShowThing(_NextThingToSay(), mbmBg);
     }
 
@@ -156,7 +174,7 @@ public class _001Manager : MonoBehaviour
         _door_OnWallCollider2D.gameObject.GetComponent<SpriteRenderer>().material.SetFloat("_lineWidth", 1);
         _door_OnWallCollider2D.gameObject.GetComponent<SpriteRenderer>().material.SetVector("_lineColor", new Vector4(1, 1, 0, 1));//yellow
         _door_OnWallCollider2D = collider2D;
-
+        
         _allowInteract = true;
     }
 
@@ -172,6 +190,7 @@ public class _001Manager : MonoBehaviour
         if (_door_OnWallCollider2D == null) return;
         else
         {
+            _setMsgBoxing(true);
             //if (buttoners[(int)inputManager.InputManager.EnumStatus.Interact].pressed)
             //{
             if (_door_OnWallCollider2D.gameObject.tag == "001door_OnWall")
@@ -209,10 +228,12 @@ public class _001Manager : MonoBehaviour
     
     private void _DoorMethodOpener_OnClick()
     {
+        _setMsgBoxing(true);
         if (_preDoor == null) return;
 
         if(_preDoor.transform.position.x - characterManager.gameObject.transform.position.x > 0)
         {
+
             //开门动画
             _preDoor.GetComponent<_001NormalDoorAnimator>().OpenMe();
 
@@ -246,7 +267,7 @@ public class _001Manager : MonoBehaviour
     {
         scriptState = ScriptState.OnDoing;
 
-        if (mbmM == mbmNormal)
+        if (mbmM == mbmNormal)//[Tip][20210307]当心! 这里两个状态传了对象
         {
             onDoingStatus = OnDoingStatus.Normal_On;
         }
@@ -254,9 +275,13 @@ public class _001Manager : MonoBehaviour
         {
             onDoingStatus = OnDoingStatus.Bg_On;
         }
-        else
+        else if(false)
         {
             //add more box here
+        }
+        else
+        {
+
         }
         
         mbmM.RunWith(MsgBoxManager.MsgBoxStatus.Running, thingStr);
@@ -267,9 +292,9 @@ public class _001Manager : MonoBehaviour
         mC_rig2D.velocity = new Vector3(0f, mC_rig2D.velocity.y);
     }
 
-    private void _keeptMoving(bool mode)
+    private void _keeptMoving(int mode)
     {
-        if (mode)
+        if (mode>0 )
         {
             mC_rig2D.velocity = new Vector3(speedX, mC_rig2D.velocity.y);
             return;
@@ -304,32 +329,31 @@ public class _001Manager : MonoBehaviour
 
     public void Update()
     {
-        //----
-        if (!buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
-        {
-            _keeptMoving(true);
-        }
-        else
-        {
-            _stopMoving();
-        }
-        //----
-
         //----movement----
-        if (buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && !buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
+        if (_isMsgBoxing == false)
         {
-            animator.SetInteger("State", 0);
-            _keeptMoving(false);//left
+            if (Input.GetKey(KeyCode.A) || buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && !buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
+            {
+                mcAnimator.SetInteger("State", 0);
+                _keeptMoving(-1);//left
+            }
+            else if (Input.GetKey(KeyCode.D) || !buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
+            {
+                mcAnimator.SetInteger("State", 1);
+                _keeptMoving(1);//right
+            }
+            else
+            {
+                mcAnimator.StopPlayback();
+                mcAnimator.SetInteger("State", -1);
+                _stopMoving();
+            }
         }
-        else if (!buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
+        else //_isInteracting == true
         {
-            animator.SetInteger("State", 1);
-            _keeptMoving(true);//right
-        }
-        else
-        {
-            animator.StopPlayback();
-            animator.SetInteger("State", -1);
+            print("abc");
+            mcAnimator.StopPlayback();
+            mcAnimator.SetInteger("State", -1);
             _stopMoving();
         }
         //----End of movement----
@@ -386,7 +410,7 @@ public class _001Manager : MonoBehaviour
                         break;
                     case OnDoingStatus.Normal_Hold:
                         //等待mbmNormal加载完毕后
-                        if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hidding && mbmNormal.StableFlag)
+                        if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
                         {
                             if (_isFirst)
                             {
@@ -407,7 +431,7 @@ public class _001Manager : MonoBehaviour
                         break;
                     case OnDoingStatus.Bg_Hold:
                         //等待mbmNormal加载完毕后
-                        if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hidding && mbmBg.StableFlag)
+                        if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmBg.StableFlag)
                         {
                             if (_isFirst)
                             {

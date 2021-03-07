@@ -8,12 +8,13 @@ using UnityEngine.EventSystems;
 
 public class MsgBoxManager : MonoBehaviour
 {
-    private UnityEngine.Events.UnityEvent _innerEvent = new UnityEngine.Events.UnityEvent();
+    public UnityEvent<bool> exitEvent = new UnityEvent<bool>();
 
     public enum MsgBoxStatus
     {
         Running,
-        Hidding
+        Hiding,
+        Hided_Stable
     };
 
     private enum _TypeForm
@@ -143,7 +144,7 @@ public class MsgBoxManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.H) && _stableFlag != false)
         {
             _stableFlag = false;
-            _status = MsgBoxStatus.Hidding;
+            _status = MsgBoxStatus.Hiding;
         }
         #endregion
 
@@ -152,8 +153,10 @@ public class MsgBoxManager : MonoBehaviour
             case MsgBoxStatus.Running:
                 _Running();
                 break;
-            case MsgBoxStatus.Hidding:
-                _Hidding();
+            case MsgBoxStatus.Hiding:
+                _Hiding();
+                break;
+            case MsgBoxStatus.Hided_Stable:
                 break;
             default:
                 break;
@@ -204,13 +207,16 @@ public class MsgBoxManager : MonoBehaviour
         }
     }
 
-    private void _Hidding()
+    private void _Hiding()
     {
         if (_SwitchingTab(false))
         {
+            //_stableFlag == true;
             _AdaptAlphaValueProperties(ref curtainTime_SetFloat, true);
             _AdaptAlphaValueProperties(ref boxAlphaTime_SetFloat,true);
             _AdaptAlphaValueProperties(ref textAlphaTime_SetFloat, false);
+
+            _status = MsgBoxStatus.Hiding;
         }
         else
         {
@@ -288,6 +294,8 @@ public class MsgBoxManager : MonoBehaviour
                     curtain.SetActive(false);
                     foreach (GameObject i in roles)
                         i.SetActive(false);
+                    
+                    exitEvent.Invoke(false);
                 }
                 _timerBoxAlpha = _timerCurtainAlpha = _timerRoleAlpha = 0f;
 
@@ -449,7 +457,7 @@ public class MsgBoxManager : MonoBehaviour
             if (nowString == "") return;
             //close This Tab
             _stableFlag = false;
-            _status = MsgBoxStatus.Hidding;
+            _status = MsgBoxStatus.Hiding;
             //[Tip][20210210]其实由此可知, 在大多数情况下, 你的文本末尾都会添加用以加载_TypeForm.WaitEnding的标记, 否则玩家来不及阅读文本
         }
     }
