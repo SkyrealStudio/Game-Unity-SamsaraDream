@@ -8404,6 +8404,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1847978965}
   - component: {fileID: 1847978966}
+  - component: {fileID: 1847978967}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -8437,6 +8438,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb043deb0522bef4694a9a60d005ad50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actor: {fileID: 1847978967}
   mcAnimator: {fileID: 744145976}
   characterManager: {fileID: 744145973}
   _001UserInputManager: {fileID: 521130488}
@@ -8446,7 +8448,7 @@ MonoBehaviour:
   mbmBg_Time: 1
   lightStatus: 0
   scriptState: 0
-  onDoingStatus: 0
+  onDoingStatus_MSGManager: 0
   doorPointer: 0
   l2dObj: {fileID: 197692464}
   l2d_TimeSet: 2.5
@@ -8473,6 +8475,23 @@ MonoBehaviour:
   - "\u8DEF\u7684\u5C3D\u5934\u662F\u5149\u660E\u5417\u2026\u6211\u4E0D\u77E5\u9053\u3002*~"
   - "\u6570\u7EC4\u672B\u5C3E\u6807\u8BB0\u6D4B\u8BD5\u6587\u5B57\u901F\u5EA6\u6D4B\u8BD5\u6587\u5B57\u901F\u5EA6\u6D4B\u8BD5\u6587\u5B57\u901F\u5EA6*~"
   speedX: 4
+--- !u!114 &1847978967
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847978964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8441c4cb744a5543af61450aac32c27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onDoingStatus_MSGManager: 0
+  manager: {fileID: 1847978966}
+  completedEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1875856895
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,9 +8,12 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using EnumActorOptions;
+
 
 public class _001Manager : MonoBehaviour
 {
+    public _001Actor actor;
     public Animator mcAnimator;
     public _001Character characterManager;
 
@@ -43,7 +46,7 @@ public class _001Manager : MonoBehaviour
 
     public LightStatus lightStatus;
     public ScriptState scriptState;
-    public OnDoingStatus_MSGManager onDoingStatus = 0;
+    public OnDoingStatus_MSGManager onDoingStatus_MSGManager = 0;
     public int doorPointer = 0;
     
     public Light2D l2dObj; 
@@ -69,7 +72,7 @@ public class _001Manager : MonoBehaviour
     {
 
     };
-    private string _NextThingToSay()
+    public string _NextThingToSay()
     {
         if (_thingsToSayPointer == -1)
         {
@@ -86,7 +89,6 @@ public class _001Manager : MonoBehaviour
     private int _thingsToSayPointer = -1;
 
     public float speedX;
-    private bool _isFirst = true;
 
     private bool _allowInteract = false;
     //public float settledValue_x;
@@ -105,11 +107,13 @@ public class _001Manager : MonoBehaviour
 
     void Start()
     {
+        scriptState = ScriptState.AtFirstTime;
+
         _001UserInputManager.alterTimeSetValue.AddListener(_001userInput_SATS);
         SetmbmAlphaTimeSet(mbmBg,mbmBg_Time);
         SetmbmAlphaTimeSet(mbmNormal, mbmNormal_Time);
 
-        _setControlmode(false);
+        _SetControlmode(false);
 
         _l2d_outerRadiusSet = l2dObj.pointLightOuterRadius;
         _l2d_IntensitySet = l2dObj.intensity;
@@ -119,12 +123,12 @@ public class _001Manager : MonoBehaviour
 
         lightStatus = LightStatus.Off;
 
-        onDoingStatus = 0;
+        onDoingStatus_MSGManager = 0;
 
         cm.SetFollowingGameObject(camHold);
         cm.StartFollowing();
         positionOrigion = mainCharacter.transform.position;
-        _stopMoving();
+        _StopMoving();
 
         characterManager.GenerateGroundEvent.AddListener(_GenNewGround);
 
@@ -138,17 +142,17 @@ public class _001Manager : MonoBehaviour
         buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_DoorMethodOpener_OnClick);
 
         //when Interact, stop movement
-        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_stopMoving);
+        buttoners[(int)inputManager.InputManager.EnumStatus.Interact].ClickEvent.AddListener(_StopMoving);
         
         mbmNormal.exitEvent.AddListener(_setMsgBoxing);
-        mbmNormal.exitEvent.AddListener(_setControlmode);
+        mbmNormal.exitEvent.AddListener(_SetControlmode);
 
         mbmBg.exitEvent.AddListener(_setMsgBoxing);
-        mbmBg.exitEvent.AddListener(_setControlmode);
+        mbmBg.exitEvent.AddListener(_SetControlmode);
 
-        //----The First Word
-        _stopMoving();
-        _StartShowThing(_NextThingToSay(), mbmBg);
+        //actorReport
+        actor.completedEvent.AddListener(_ActorReport);
+
     }
 
     private void SetmbmAlphaTimeSet( MsgBoxManager mbm, float mbm_Time)
@@ -161,7 +165,7 @@ public class _001Manager : MonoBehaviour
         GameObject tgo = Instantiate(groundGroup, (V3_groundGroupPre += new Vector3(groundFloatAdd, 0f, 0f)), groundGroup.transform.rotation, GameObject.Find("GameWorld").transform);
 
         tgo.transform.Find("ColliderGen").gameObject.SetActive(true);
-        tgo.transform.Find("DoorGroup").gameObject.transform.Find("ColliderOpener1").gameObject.SetActive(true);
+        tgo.transform.Find("NormalDoorGroup1").gameObject.transform.Find("ColliderOpener1").gameObject.SetActive(true);
     }
 
     //----OnWall Door
@@ -270,11 +274,11 @@ public class _001Manager : MonoBehaviour
 
         if (mbmM == mbmNormal)//[Tip][20210307]当心! 这里两个状态传了对象
         {
-            onDoingStatus = OnDoingStatus_MSGManager.mbmNormal_On;
+            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_On;
         }
         else if(mbmBg)
         {
-            onDoingStatus = OnDoingStatus_MSGManager.mbmBg_On;
+            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_On;
         }
         else if(false)
         {
@@ -288,12 +292,12 @@ public class _001Manager : MonoBehaviour
         mbmM.RunWith(MsgBoxManager.MsgBoxStatus.Running, thingStr);
     }
 
-    private void _stopMoving()
+    private void _StopMoving()
     {
         mC_rig2D.velocity = new Vector3(0f, mC_rig2D.velocity.y);
     }
 
-    private void _keeptMoving(int mode)
+    private void _KeeptMoving(int mode)
     {
         if (mode>0 )
         {
@@ -308,7 +312,7 @@ public class _001Manager : MonoBehaviour
     /// true 显示, false不显示
     /// </summary>
     /// <param name="mode"></param>
-    private void _setControlmode(bool mode)
+    private void _SetControlmode(bool mode)
     {
         foreach (Buttoner buttoner in buttoners)
         {
@@ -326,51 +330,62 @@ public class _001Manager : MonoBehaviour
         }
     }
 
-    private void _setControlmode(bool mode, int specialSetting)
+    private void _SetControlmode(bool mode, int specialSetting)
     {
         switch (specialSetting)
         {
-            case 1:
+            case 1://[Tip][20210310]清空buttoners的状态, 效率差
                 foreach (Buttoner buttoner in buttoners)
                     if(buttoner!=null)buttoner.pressed = false;
                 break;
         }
-        _setControlmode(mode);
+        _SetControlmode(mode);
     }
 
-    // Update is called once per frame
+    private void _ActorReport()
+    {
+        scriptState = ScriptState.AllowPlaying;
+    }
+
+
+
+
+
+
+
 
     public void Update()
     {
-        //----movement----
+        //------------------------------------------------------movement----
         if (_isMsgBoxing == false)
         {
             if (Input.GetKey(KeyCode.A) || buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && !buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
             {
+                //left
                 mcAnimator.SetInteger("State", 0);
-                _keeptMoving(-1);//left
+                _KeeptMoving(-1);
             }
             else if (Input.GetKey(KeyCode.D) || !buttoners[(int)inputManager.InputManager.EnumStatus.Left].pressed && buttoners[(int)inputManager.InputManager.EnumStatus.Right].pressed)
             {
+                //right
                 mcAnimator.SetInteger("State", 1);
-                _keeptMoving(1);//right
+                _KeeptMoving(1);
             }
             else
             {
                 mcAnimator.StopPlayback();
                 mcAnimator.SetInteger("State", -1);
-                _stopMoving();
+                _StopMoving();
             }
         }
-        else //_isInteracting == true
+        else
         {
-            _stopMoving();
+            _StopMoving();
             mcAnimator.SetInteger("State", -1);
             mcAnimator.StopPlayback();
-            _setControlmode(false,1);
-            //print("abc");
+            _SetControlmode(false,1);
         }
-        //----End of movement----
+        //--------------------------------------------End of movement----
 
         switch (lightStatus)
         {
@@ -410,51 +425,45 @@ public class _001Manager : MonoBehaviour
 
         switch (scriptState)
         {
+            //First Load Scene Words
             case ScriptState.AtFirstTime:
+                _SetControlmode(false);
+                if (!actor.haveMission)
+                {
+                    _StopMoving();
+
+                    actor._StartShowThing_Actor(_NextThingToSay(), mbmBg);
+
+                    actor.AddMision(ActOptions.First001OnLoad);
+                    actor.StartActing();
+                    actor.onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_On;
+                }
                 break;
+
+
             case ScriptState.AllowPlaying:
-                if(!_isFirst)
-                    _setControlmode(true);
+                _SetControlmode(true);
                 break;
             case ScriptState.OnDoing:
-                _setControlmode(false);
-                switch (onDoingStatus)
+                _SetControlmode(false);
+                switch (onDoingStatus_MSGManager)
                 {
                     case OnDoingStatus_MSGManager.mbmNormal_On:
                         if(mbmNormal.StableFlag == true)
-                            onDoingStatus = OnDoingStatus_MSGManager.mbmNormal_Hold;
+                            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_Hold;
                         break;
                     case OnDoingStatus_MSGManager.mbmNormal_Hold:
-                        //等待mbmNormal加载完毕后
                         if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
-                        {
-                            if (_isFirst)
-                            {
-                                lightStatus = LightStatus.Off2On;
-                                _setControlmode(true);
-                                _isFirst = false;
-                                scriptState = ScriptState.AllowPlaying;
-                                break;
-                            }
                             scriptState = ScriptState.AllowPlaying;
-                        }
                         break;
-                    case OnDoingStatus_MSGManager.mbmBg_On://background
+                    case OnDoingStatus_MSGManager.mbmBg_On:
 
                         if (mbmBg.StableFlag == true)
-                            onDoingStatus = OnDoingStatus_MSGManager.mbmBg_Hold;
+                            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_Hold;
                         break;
                     case OnDoingStatus_MSGManager.mbmBg_Hold:
-                        //等待mbmNormal加载完毕后
                         if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmBg.StableFlag)
-                        {
-                            if (_isFirst)
-                            {
-                                _StartShowThing("身边一片漆黑。^", mbmNormal);
-                                break;
-                            }
                             scriptState = ScriptState.AllowPlaying;
-                        }
                         break;
                 }
                 break;
