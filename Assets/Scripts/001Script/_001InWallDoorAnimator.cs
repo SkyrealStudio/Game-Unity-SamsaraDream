@@ -26,7 +26,7 @@ public class _001InWallDoorAnimator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];//关门假象
+        gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];
         _setCaster(0, true);
         _setCaster(1, false);
         _setCaster(2, false);

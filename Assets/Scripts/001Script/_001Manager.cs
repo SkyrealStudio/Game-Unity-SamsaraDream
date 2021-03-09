@@ -22,15 +22,16 @@ public class _001Manager : MonoBehaviour
     public float mbmBg_Time;
     public enum ScriptState
     {
-        OnWaiting,
+        AtFirstTime,
+        AllowPlaying,
         OnDoing
     }
-    public enum OnDoingStatus
+    public enum OnDoingStatus_MSGManager
     {
-        Normal_On,
-        Normal_Hold,
-        Bg_On,
-        Bg_Hold
+        mbmNormal_On,
+        mbmNormal_Hold,
+        mbmBg_On,
+        mbmBg_Hold
     }
     public enum LightStatus
     {
@@ -42,7 +43,7 @@ public class _001Manager : MonoBehaviour
 
     public LightStatus lightStatus;
     public ScriptState scriptState;
-    public OnDoingStatus onDoingStatus = 0;
+    public OnDoingStatus_MSGManager onDoingStatus = 0;
     public int doorPointer = 0;
     
     public Light2D l2dObj; 
@@ -269,11 +270,11 @@ public class _001Manager : MonoBehaviour
 
         if (mbmM == mbmNormal)//[Tip][20210307]当心! 这里两个状态传了对象
         {
-            onDoingStatus = OnDoingStatus.Normal_On;
+            onDoingStatus = OnDoingStatus_MSGManager.mbmNormal_On;
         }
         else if(mbmBg)
         {
-            onDoingStatus = OnDoingStatus.Bg_On;
+            onDoingStatus = OnDoingStatus_MSGManager.mbmBg_On;
         }
         else if(false)
         {
@@ -409,7 +410,9 @@ public class _001Manager : MonoBehaviour
 
         switch (scriptState)
         {
-            case ScriptState.OnWaiting:
+            case ScriptState.AtFirstTime:
+                break;
+            case ScriptState.AllowPlaying:
                 if(!_isFirst)
                     _setControlmode(true);
                 break;
@@ -417,11 +420,11 @@ public class _001Manager : MonoBehaviour
                 _setControlmode(false);
                 switch (onDoingStatus)
                 {
-                    case OnDoingStatus.Normal_On://normal
+                    case OnDoingStatus_MSGManager.mbmNormal_On:
                         if(mbmNormal.StableFlag == true)
-                            onDoingStatus = OnDoingStatus.Normal_Hold;
+                            onDoingStatus = OnDoingStatus_MSGManager.mbmNormal_Hold;
                         break;
-                    case OnDoingStatus.Normal_Hold:
+                    case OnDoingStatus_MSGManager.mbmNormal_Hold:
                         //等待mbmNormal加载完毕后
                         if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
                         {
@@ -430,19 +433,18 @@ public class _001Manager : MonoBehaviour
                                 lightStatus = LightStatus.Off2On;
                                 _setControlmode(true);
                                 _isFirst = false;
-                                scriptState = ScriptState.OnWaiting;
+                                scriptState = ScriptState.AllowPlaying;
                                 break;
                             }
-                            scriptState = ScriptState.OnWaiting;
+                            scriptState = ScriptState.AllowPlaying;
                         }
                         break;
-
-                    case OnDoingStatus.Bg_On://background
+                    case OnDoingStatus_MSGManager.mbmBg_On://background
 
                         if (mbmBg.StableFlag == true)
-                            onDoingStatus = OnDoingStatus.Bg_Hold;
+                            onDoingStatus = OnDoingStatus_MSGManager.mbmBg_Hold;
                         break;
-                    case OnDoingStatus.Bg_Hold:
+                    case OnDoingStatus_MSGManager.mbmBg_Hold:
                         //等待mbmNormal加载完毕后
                         if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmBg.StableFlag)
                         {
@@ -451,7 +453,7 @@ public class _001Manager : MonoBehaviour
                                 _StartShowThing("身边一片漆黑。^", mbmNormal);
                                 break;
                             }
-                            scriptState = ScriptState.OnWaiting;
+                            scriptState = ScriptState.AllowPlaying;
                         }
                         break;
                 }
