@@ -27,7 +27,9 @@ public class _001Manager : MonoBehaviour
     {
         AtFirstTime,
         AllowPlaying,
-        OnDoing
+        OnActor_mbmNormal,
+        OnActor_mbmBg,
+        OnActor_mbmNormal_mbmBg //[Tip][20210311]未完工 -- Actor会在mbmnormal未完成时嵌套mbmBg
     }
     public enum OnDoingStatus_MSGManager
     {
@@ -45,7 +47,7 @@ public class _001Manager : MonoBehaviour
     }
 
     public LightStatus lightStatus;
-    public ScriptState scriptState;
+    public ScriptState scriptStatus;
     public OnDoingStatus_MSGManager onDoingStatus_MSGManager = 0;
     public int doorPointer = 0;
     
@@ -107,7 +109,7 @@ public class _001Manager : MonoBehaviour
 
     void Start()
     {
-        scriptState = ScriptState.AtFirstTime;
+        scriptStatus = ScriptState.AtFirstTime;
 
         _001UserInputManager.alterTimeSetValue.AddListener(_001userInput_SATS);
         SetmbmAlphaTimeSet(mbmBg,mbmBg_Time);
@@ -151,7 +153,7 @@ public class _001Manager : MonoBehaviour
         mbmBg.exitEvent.AddListener(_SetControlmode);
 
         //actorReport
-        actor.completedEvent.AddListener(_ActorReport);
+        actor.completedEvent.AddListener(_ActorFinished);
 
     }
 
@@ -270,15 +272,17 @@ public class _001Manager : MonoBehaviour
     /// <param name="mbmM"></param>
     private void _StartShowThing(string thingStr,MsgBoxManager mbmM)
     {
-        scriptState = ScriptState.OnDoing;
-
         if (mbmM == mbmNormal)//[Tip][20210307]当心! 这里两个状态传了对象
         {
-            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_On;
+            actor._StartShowThing_Actor(thingStr, mbmNormal);
+            actor.onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_On;
+            scriptStatus = ScriptState.OnActor_mbmNormal;
         }
         else if(mbmBg)
         {
-            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_On;
+            actor._StartShowThing_Actor(thingStr, mbmBg);
+            actor.onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_On;
+            scriptStatus = ScriptState.OnActor_mbmBg;
         }
         else if(false)
         {
@@ -342,9 +346,10 @@ public class _001Manager : MonoBehaviour
         _SetControlmode(mode);
     }
 
-    private void _ActorReport()
+    private void _ActorFinished()
     {
-        scriptState = ScriptState.AllowPlaying;
+        //演员结束, 切回正常游戏模式
+        scriptStatus = ScriptState.AllowPlaying;
     }
 
 
@@ -387,6 +392,8 @@ public class _001Manager : MonoBehaviour
         }
         //--------------------------------------------End of movement----
 
+
+        //--------------------------------------------Light Control----
         switch (lightStatus)
         {
             case LightStatus.Off:
@@ -422,10 +429,20 @@ public class _001Manager : MonoBehaviour
             default:
                 break;
         }
+        //--------------------------------------------End Of Light Control----
 
-        switch (scriptState)
+        //--------------------------------------------Script Status----
+        switch (scriptStatus)
         {
-            //First Load Scene Words
+            case ScriptState.AllowPlaying:
+                _SetControlmode(true);
+                break;
+
+            /*[Tip][20210312]关于为什么要保留actor.haveMission
+             *在每一次Update中都会执行scriptState的检测,而不希望重复设置例如
+             *_SetControlmode(false);这种东西
+             *同时加强Update作为时钟的控制力, 方便维护
+             */
             case ScriptState.AtFirstTime:
                 _SetControlmode(false);
                 if (!actor.haveMission)
@@ -440,33 +457,27 @@ public class _001Manager : MonoBehaviour
                 }
                 break;
 
-
-            case ScriptState.AllowPlaying:
-                _SetControlmode(true);
-                break;
-            case ScriptState.OnDoing:
-                _SetControlmode(false);
-                switch (onDoingStatus_MSGManager)
+            case ScriptState.OnActor_mbmNormal:
+                if (!actor.haveMission)
                 {
-                    case OnDoingStatus_MSGManager.mbmNormal_On:
-                        if(mbmNormal.StableFlag == true)
-                            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_Hold;
-                        break;
-                    case OnDoingStatus_MSGManager.mbmNormal_Hold:
-                        if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
-                            scriptState = ScriptState.AllowPlaying;
-                        break;
-                    case OnDoingStatus_MSGManager.mbmBg_On:
-
-                        if (mbmBg.StableFlag == true)
-                            onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_Hold;
-                        break;
-                    case OnDoingStatus_MSGManager.mbmBg_Hold:
-                        if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmBg.StableFlag)
-                            scriptState = ScriptState.AllowPlaying;
-                        break;
+                    _SetControlmode(false);
+                    actor.AddMision(ActOptions.mbmNormal);
+                    _StopMoving();
+                    actor.StartActing();
                 }
                 break;
+
+            case ScriptState.OnActor_mbmBg:
+                if (!actor.haveMission)
+                {
+                    _SetControlmode(false);
+                    actor.AddMision(ActOptions.mbmBg);
+                    _StopMoving();
+                    actor.StartActing();
+                }
+
+                break;
+
             default:
                 break;
         }

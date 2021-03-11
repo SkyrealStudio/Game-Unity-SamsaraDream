@@ -10,15 +10,13 @@ public class _001NormalDoorManager : MonoBehaviour
     public GameObject opener1;
     public GameObject opener2;
 
-    // Start is called before the first frame update
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
-        doorStatus = doorNormal.GetComponent<BoxCollider2D>().isTrigger;
+        //doorStatus = doorNormal.GetComponent<BoxCollider2D>().isTrigger;
     }
 }

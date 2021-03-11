@@ -11,7 +11,7 @@ public class _001NormalDoorAnimator : MonoBehaviour
     public float timeAnime_SetFloat;
     public bool _stableFlag;
 
-    private Queue<int> _orderQueue = new Queue<int>(0);
+    private Queue<EnumState> _orderQueue = new Queue<EnumState>(0);
     public Sprite[] sprites;
 
     public enum EnumState
@@ -37,12 +37,12 @@ public class _001NormalDoorAnimator : MonoBehaviour
 
     public void OpenMe()
     {
-        _orderQueue.Enqueue(1);
+        _orderQueue.Enqueue(EnumState.Close2Open);
     }
 
     public void CloseMe()
     {
-        _orderQueue.Enqueue(2);
+        _orderQueue.Enqueue(EnumState.Open2Close);
     }
 
     private void _setCaster(int n,bool mode)
@@ -60,14 +60,15 @@ public class _001NormalDoorAnimator : MonoBehaviour
             {
                 switch (_orderQueue.Dequeue())
                 {
-                    case 1:
+                    case EnumState.Close2Open:
                         if (_state != EnumState.Close) break;
                         _stableFlag = false;
                         _state = EnumState.Close2Open;
                         break;
-                    case 2:
+                    case EnumState.Open2Close:
                         if (_state != EnumState.Open) break;
                         _stableFlag = false;
+                        gameObject.GetComponent<BoxCollider2D>().isTrigger = false;
                         _state = EnumState.Open2Close;
                         break;
                     default:
@@ -101,7 +102,6 @@ public class _001NormalDoorAnimator : MonoBehaviour
                 case EnumState.Close:
                     _setCaster(1, false);
                     _setCaster(0, true);
-                    gameObject.GetComponent<BoxCollider2D>().isTrigger = false;
                     gameObject.GetComponent<SpriteRenderer>().sprite = sprites[0];
                     _stableFlag = true;
                     break;

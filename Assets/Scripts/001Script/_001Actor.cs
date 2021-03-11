@@ -11,7 +11,9 @@ namespace EnumActorOptions
 {
     public enum ActOptions
     {
-        First001OnLoad
+        First001OnLoad,
+        mbmNormal,
+        mbmBg
     }
 
 }
@@ -105,6 +107,46 @@ public class _001Actor : MonoBehaviour
                     if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
                     {
                         manager.lightStatus = LightStatus.Off2On;
+                        haveMission = false;
+                        //actorReport
+                        completedEvent.Invoke();
+                    }
+                    break;
+            }
+        }
+
+
+        if (haveMission && actOption == ActOptions.mbmBg)
+        {
+            switch (onDoingStatus_MSGManager)
+            {
+                case OnDoingStatus_MSGManager.mbmBg_On://background
+                    if (mbmBg.StableFlag == true)
+                        onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmBg_Hold;
+                    break;
+                case OnDoingStatus_MSGManager.mbmBg_Hold:
+                    if (mbmBg.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmBg.StableFlag)
+                    {
+                        haveMission = false;
+                        //actorReport
+                        completedEvent.Invoke();
+                        break;
+                    }
+                    break;
+            }
+        }
+
+        if (haveMission && actOption == ActOptions.mbmNormal)
+        {
+            switch (onDoingStatus_MSGManager)
+            {
+                case OnDoingStatus_MSGManager.mbmNormal_On:
+                    if (mbmNormal.StableFlag == true)
+                        onDoingStatus_MSGManager = OnDoingStatus_MSGManager.mbmNormal_Hold;
+                    break;
+                case OnDoingStatus_MSGManager.mbmNormal_Hold:
+                    if (mbmNormal.Status == MsgBoxManager.MsgBoxStatus.Hiding && mbmNormal.StableFlag)
+                    {
                         haveMission = false;
                         //actorReport
                         completedEvent.Invoke();
