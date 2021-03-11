@@ -86,10 +86,12 @@ public class MsgBoxManager : MonoBehaviour
 
 
     private _TypeForm _nowtypeForm;
-    private string[] _waitingStr = new string[4];
+    //private string[] _waitingStr = new string[4];
+    private string[] _waitingStr = new string[2];
     private int _waitShape = 1;
     private float _timerWaitStateCount = 0f;
     public float timeWaitStateCount_Set;
+
 
     private bool _boxTouched;
 
@@ -476,10 +478,20 @@ public class MsgBoxManager : MonoBehaviour
                 {
                     _timerWaitStateCount = 0f;
                     ++_waitShape;
-                    if (_waitShape > 3)
+                    
+                    //if (_waitShape > 3)
+                    //{
+                    //    _waitShape = 1;
+                    //}
+
+                    if (_waitShape > 1)
                     {
-                        _waitShape = 1;
+                        _waitShape = 0;
                     }
+                    Textt.text = _waitingStr[_waitShape];
+                }
+                else
+                {
                     Textt.text = _waitingStr[_waitShape];
                 }
                 break;
@@ -499,10 +511,13 @@ public class MsgBoxManager : MonoBehaviour
     {
         if (t == _TypeForm.WaitEnding)
         {
+            //_waitingStr[0] = _textout;
+            //_waitingStr[1] = _textout + " .";
+            //_waitingStr[2] = _textout + " . .";
+            //_waitingStr[3] = _textout + " . . .";
+            
             _waitingStr[0] = _textout;
-            _waitingStr[1] = _textout + " .";
-            _waitingStr[2] = _textout + " . .";
-            _waitingStr[3] = _textout + " . . .";
+            _waitingStr[1] = _textout + " ▼";
         }
         else if (t == _TypeForm.Plain && (_nowtypeForm == _TypeForm.WaitEnding || _nowtypeForm == _TypeForm.WaitEnding))
         {
